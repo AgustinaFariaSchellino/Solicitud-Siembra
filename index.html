@@ -472,15 +472,17 @@
                     <p class="text-xs md:text-sm font-semibold text-on-surface" id="map-banner-text">Ingresá la
                         localidad más cercana a tu lote y hacé clic en Buscar.</p>
                 </div>
-                <!-- Controls and Map area -->
-                <div class="flex-grow flex flex-col p-4 md:p-6 gap-3 md:gap-4 min-h-0">
+                <!-- Controls and Map area (scrolleable) -->
+                <div class="flex-grow flex flex-col p-4 md:p-6 gap-3 md:gap-4 min-h-0 overflow-y-auto">
                     <!-- Search bar -->
                     <div class="flex-none flex flex-col sm:flex-row gap-2 w-full">
-                        <input id="map-search-input"
-                            class="flex-grow bg-surface-container-lowest border border-outline-variant rounded-full px-6 py-3 min-w-0 focus:ring-2 focus:ring-primary-container focus:outline-none"
-                            placeholder="Ingresar localidad..." type="text" />
-                        <div id="search-suggestions"
-                            class="absolute z-[1001] w-full bg-white border border-gray-200 rounded-xl shadow-xl hidden mt-2 max-h-60 overflow-y-auto">
+                        <div class="relative flex-grow min-w-0">
+                            <input id="map-search-input"
+                                class="w-full bg-surface-container-lowest border border-outline-variant rounded-full px-6 py-3 focus:ring-2 focus:ring-primary-container focus:outline-none"
+                                placeholder="Ingresar localidad..." type="text" />
+                            <div id="search-suggestions"
+                                class="absolute z-[1001] left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl hidden max-h-60 overflow-y-auto">
+                            </div>
                         </div>
                         <button id="map-search-btn" type="button"
                             class="bg-surface-container-high text-on-surface font-bold px-6 py-3 rounded-full hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
@@ -489,19 +491,21 @@
                     </div>
                     <!-- Map Wrapper (oculto hasta buscar) -->
                     <div id="map-wrapper"
-                        class="hidden w-full flex-grow min-h-[300px] relative z-10 rounded-xl md:rounded-2xl overflow-hidden bg-surface-container border border-outline-variant">
+                        class="hidden w-full flex-grow min-h-[260px] relative z-10 rounded-xl md:rounded-2xl overflow-hidden bg-surface-container border border-outline-variant">
                         <!-- Helper Flotante -->
                         <div id="map-click-helper"
                             class="absolute top-6 left-1/2 -translate-x-1/2 z-[1000] bg-primary-container text-on-primary-container font-black px-6 py-3 rounded-full shadow-lg flex items-center justify-center gap-2 pointer-events-none transition-opacity duration-300">
                             <span class="material-symbols-outlined animate-bounce">touch_app</span>
-                            <span class="text-sm">Busca tu lote y hacé clic para marcarlo</span>
+                            <span class="text-sm">Buscá tu lote y hacé clic para marcarlo</span>
                         </div>
                         <div id="map-container" class="absolute inset-0 w-full h-full">
                         </div>
                     </div>
-                    <!-- Confirm Button -->
+                </div>
+                <!-- Confirm Button — siempre visible, anclado al pie del modal -->
+                <div class="flex-none border-t border-surface-container p-4 md:p-6 flex justify-center">
                     <button type="button" id="map-confirm-btn"
-                        class="flex-none bg-[#47C278] text-white font-bold text-lg px-8 py-3 md:py-4 rounded-full shadow-md hover:shadow-lg transition-all w-full md:w-auto self-center disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="bg-[#47C278] text-white font-bold text-lg px-8 py-3 md:py-4 rounded-full shadow-md hover:shadow-lg transition-all w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed">
                         Confirmar Ubicación
                     </button>
                 </div>
@@ -564,7 +568,7 @@
                 <a href="https://onelink.to/6g4qbv" target="_blank" rel="noopener noreferrer">Descargar App</a>
             </button>
             <!-- Support Section -->
-            <div class="mt-24 pt-12 w-full">
+            <div class="mt-10 pt-6 w-full">
                 <!-- Visual Divider -->
                 <div class="w-full h-px bg-gradient-to-r from-transparent via-outline-variant/30 to-transparent mb-12">
                 </div>
@@ -895,9 +899,10 @@
                                     setTimeout(() => {
                                         map.invalidateSize();
                                         map.setView([lat, lon], 13);
-                                        // Vaciamos currentLat/Lon por si antes hizo click, hasta que no haga click no habilitamos confirmar
                                         mapConfirmBtn.disabled = marker === null;
-                                    }, 50);
+                                        // Scroll suave para mostrar el mapa completo
+                                        mapWrapperEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                    }, 100);
 
                                     mapSearchInput.value = nombreFinal;
                                     suggestionsContainer.classList.add('hidden');
@@ -941,7 +946,9 @@
                         setTimeout(() => {
                             map.invalidateSize();
                             map.setView([lat, lon], 12);
-                        }, 50);
+                            // Scroll suave para mostrar el mapa completo
+                            mapWrapperEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }, 100);
                     } else {
                         alert('No se encontró la localidad. Probá con otra búsqueda.');
                     }
