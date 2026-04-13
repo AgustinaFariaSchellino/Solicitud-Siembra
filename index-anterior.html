@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Vistaguay - Solicitud de siembra con Dron</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+        }
+
+        /* === Material UI Error States === */
+        .field-error input,
+        .field-error select {
+            outline: none !important;
+            box-shadow: 0 0 0 2px #ba1a1a !important;
+            background-color: #fff8f7 !important;
+        }
+
+        .field-error label {
+            color: #ba1a1a !important;
+        }
+
+        .field-error .location-trigger input {
+            box-shadow: 0 0 0 2px #ba1a1a !important;
+            background-color: #fff8f7 !important;
+        }
+
+        .field-error-msg {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            color: #ba1a1a;
+            font-size: 0.72rem;
+            font-weight: 500;
+            margin-top: 4px;
+            margin-left: 1rem;
+        }
+
+        .field-error .field-error-msg {
+            display: flex;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-6px);
+            }
+
+            40% {
+                transform: translateX(6px);
+            }
+
+            60% {
+                transform: translateX(-4px);
+            }
+
+            80% {
+                transform: translateX(4px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .shake {
+            animation: shake 0.35s ease;
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#6d7a6f",
+                        "surface-container-highest": "#e1e2e4",
+                        "surface-bright": "#f8f9fb",
+                        "on-primary-container": "#004b26",
+                        "background": "#ffffff",
+                        "on-secondary-container": "#5e6572",
+                        "on-primary-fixed-variant": "#00522a",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#64dd90",
+                        "tertiary": "#9e3f45",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d9dadc",
+                        "surface-variant": "#e1e2e4",
+                        "surface": "#ffffff",
+                        "surface-container": "#edeef0",
+                        "secondary-fixed": "#dce2f3",
+                        "on-surface": "#191c1e",
+                        "error": "#ba1a1a",
+                        "on-background": "#191c1e",
+                        "primary-container": "#47c278",
+                        "primary-fixed": "#82faaa",
+                        "surface-container-high": "#e7e8ea",
+                        "on-tertiary-fixed": "#40000a",
+                        "on-surface-variant": "#3e4a3f",
+                        "secondary": "#585f6c",
+                        "inverse-primary": "#64dd90",
+                        "on-secondary-fixed": "#151c27",
+                        "secondary-fixed-dim": "#c0c7d6",
+                        "on-secondary-fixed-variant": "#404754",
+                        "outline-variant": "#bdcabc",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#2e3132",
+                        "on-tertiary-container": "#772129",
+                        "surface-tint": "#006d3a",
+                        "tertiary-container": "#ff8a8e",
+                        "tertiary-fixed": "#ffdad9",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f3f4f6",
+                        "secondary-container": "#dce2f3",
+                        "tertiary-fixed-dim": "#ffb3b4",
+                        "primary": "#47c278",
+                        "inverse-on-surface": "#f0f1f3",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#7f282f",
+                        "on-primary-fixed": "#00210e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    }
+                },
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+    <!-- Header -->
+    <header
+        class="fixed top-0 w-full z-50 bg-[#FFFFFF] flex justify-between items-center px-8 h-16 border-b border-surface-container">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl font-black tracking-tighter text-[#191C1E]">Vistaguay</span>
+        </div>
+    </header>
+    <!-- Main View: Solicitud de Siembra -->
+    <main class="pt-24 pb-16 px-4 md:px-8 max-w-5xl mx-auto w-full" id="solicitud-view">
+        <section class="mb-12">
+            <h1 class="text-4xl md:text-5xl font-black tracking-tight text-on-surface mb-4">Solicitud de siembra con
+                Dron</h1>
+            <p class="text-lg text-on-surface-variant max-w-2xl leading-relaxed">
+                Completá este formulario para iniciar tu pedido. Nosotros nos encargamos de seleccionar al piloto de la
+                Red Experts más capacitado para asegurar el éxito de tu operación.
+            </p>
+        </section>
+        <form class="space-y-8" id="siembra-form">
+            <!-- Bloque 1: Datos de Negocio -->
+            <div class="bg-surface-container-low rounded-lg p-8 md:p-10">
+                <div class="flex items-center gap-3 mb-8">
+                    <div
+                        class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+                        <span class="material-symbols-outlined">business_center</span>
+                    </div>
+                    <h2 class="text-2xl font-bold tracking-tight">Datos de Negocio</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="space-y-2" data-field="nombre-empresa">
+                        <label
+                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Nombre y
+                            Apellido / Empresa</label>
+                        <input id="nombre-empresa" name="nombre_empresa"
+                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
+                            placeholder="Ej: Juan Pérez" type="text" />
+                        <p class="field-error-msg"><span class="material-symbols-outlined"
+                                style="font-size:14px">error</span>Este campo es obligatorio</p>
+                    </div>
+                    <div class="space-y-2" data-field="fecha-aplicacion">
+                        <label class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Fecha
+                            de Aplicación</label>
+                        <input id="fecha-aplicacion" name="fecha_aplicacion"
+                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
+                            type="date" />
+                        <p class="field-error-msg"><span class="material-symbols-outlined"
+                                style="font-size:14px">error</span>Este campo es obligatorio</p>
+                    </div>
+                    <div class="space-y-2" data-field="numero-contacto">
+                        <label
+                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Número
+                            de contacto</label>
+                        <input id="numero-contacto" name="numero_contacto"
+                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
+                            placeholder="+54 9 11 0000-0000" type="tel" />
+                        <p class="field-error-msg"><span class="material-symbols-outlined"
+                                style="font-size:14px">error</span>Este campo es obligatorio</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Bloque 2: Lote y Entorno -->
+            <div class="bg-surface-container-low rounded-lg p-8 md:p-10">
+                <div class="flex items-center gap-3 mb-8">
+                    <div
+                        class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+                        <span class="material-symbols-outlined">map</span>
+                    </div>
+                    <h2 class="text-2xl font-bold tracking-tight">Lote y Entorno</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                    <div class="space-y-2 col-span-1 md:col-span-1" data-field="lote-location-input">
+                        <label
+                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Ubicación
+                            del Lote</label>
+                        <div class="relative location-trigger" id="ubicacion-lote-trigger" style="cursor: pointer;">
+                            <span
+                                class="material-symbols-outlined absolute left-5 top-4 text-on-surface-variant">location_on</span>
+                            <input id="lote-location-input" name="lote_location" readonly
+                                class="w-full bg-surface-container-lowest border-none rounded-full pl-12 pr-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm cursor-pointer"
+                                placeholder="Seleccionar en mapa..." type="text" />
+                            <input id="lote-lat-input" type="hidden" name="lat" />
+                            <input id="lote-lng-input" type="hidden" name="lng" />
+                        </div>
+                        <p class="field-error-msg"><span class="material-symbols-outlined"
+                                style="font-size:14px">error</span>Seleccioná una ubicación en el mapa</p>
+                    </div>
+                    <div class="space-y-2" data-field="hectareas">
+                        <label
+                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Hectáreas</label>
+                        <input id="hectareas" name="hectareas"
+                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
+                            placeholder="0" type="number" />
+                        <p class="field-error-msg"><span class="material-symbols-outlined"
+                                style="font-size:14px">error</span>Este campo es obligatorio</p>
+                    </div>
+                    <div class="space-y-2" data-field="cultivo-select">
+                        <label
+                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Cultivo</label>
+                        <select id="cultivo-select" name="cultivo"
+                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm appearance-none">
+                            <option value="">Seleccionar cultivo</option>
+                            <option value="Soja">Soja</option>
+                            <option value="Maíz">Maíz</option>
+                            <option value="Trigo">Trigo</option>
+                            <option value="Girasol">Girasol</option>
+                            <option value="Cebada">Cebada</option>
+                            <option value="Ajo">Ajo</option>
+                            <option value="Alfalfa">Alfalfa</option>
+                            <option value="Algodón">Algodón</option>
+                            <option value="Amaranto">Amaranto</option>
+                            <option value="Arroz">Arroz</option>
+                            <option value="Arveja">Arveja</option>
+                            <option value="Avena">Avena</option>
+                            <option value="Camelina">Camelina</option>
+                            <option value="Campo natural">Campo natural</option>
+                            <option value="Carinata">Carinata</option>
+                            <option value="Caña de azúcar">Caña de azúcar</option>
+                            <option value="Cebolla">Cebolla</option>
+                            <option value="Centeno">Centeno</option>
+                            <option value="Chía">Chía</option>
+                            <option value="Ciruela">Ciruela</option>
+                            <option value="Colza">Colza</option>
+                            <option value="Cártamo">Cártamo</option>
+                            <option value="Durazno">Durazno</option>
+                            <option value="Garbanzo">Garbanzo</option>
+                            <option value="Lentejas">Lentejas</option>
+                            <option value="Lino">Lino</option>
+                            <option value="Lotus corniculatus">Lotus corniculatus</option>
+                            <option value="Manzana">Manzana</option>
+                            <option value="Maní">Maní</option>
+                            <option value="Mijo">Mijo</option>
+                            <option value="Moha">Moha</option>
+                            <option value="Palta">Palta</option>
+                            <option value="Papa">Papa</option>
+                            <option value="Pera">Pera</option>
+                            <option value="Pistacho">Pistacho</option>
+                            <option value="Poroto mung">Poroto mung</option>
+                            <option value="Poroto negro">Poroto negro</option>
+                            <option value="Poroto rojo">Poroto rojo</option>
+                            <option value="Quinoa">Quinoa</option>
+                            <option value="Remolacha Azucarera">Remolacha Azucarera</option>
+                            <option value="Sorgo">Sorgo</option>
+                            <option value="Sésamo">Sésamo</option>
+                            <option value="Tomate">Tomate</option>
+                            <option value="Trigo Candeal">Trigo Candeal</option>
+                            <option value="Trigo Sarraceno">Trigo Sarraceno</option>
+                            <option value="Triticale">Triticale</option>
+                            <option value="Uva (pasas)">Uva (pasas)</option>
+                            <option value="Vicia">Vicia</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                        <p class="field-error-msg"><span class="material-symbols-outlined"
+                                style="font-size:14px">error</span>Seleccioná un cultivo</p>
+                    </div>
+                    <div id="otro-cultivo-container" class="space-y-2 hidden col-span-1 md:col-span-3"
+                        data-field="otro-cultivo-input">
+                        <label
+                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Especifique
+                            otro cultivo</label>
+                        <input id="otro-cultivo-input" name="otro_cultivo"
+                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
+                            placeholder="Por favor, especifique..." type="text" />
+                        <p class="field-error-msg"><span class="material-symbols-outlined"
+                                style="font-size:14px">error</span>Este campo es obligatorio</p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <label
+                        class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Obstáculos
+                        en el lote</label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <label
+                            class="group flex flex-col items-center justify-center p-4 bg-surface-container-lowest rounded-xl cursor-pointer hover:bg-primary-container/10 border-2 border-transparent transition-all relative">
+                            <input id="obs-casco" name="obstaculos[]" value="Casco urbano" class="hidden peer"
+                                type="checkbox" />
+                            <span
+                                class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary transition-colors">location_city</span>
+                            <span class="text-xs font-medium text-center">Casco urbano</span>
+                            <div
+                                class="absolute inset-0 border-2 border-primary-container rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+                            </div>
+                        </label>
+                        <label
+                            class="group flex flex-col items-center justify-center p-4 bg-surface-container-lowest rounded-xl cursor-pointer hover:bg-primary-container/10 border-2 border-transparent transition-all relative">
+                            <input id="obs-electrico" name="obstaculos[]" value="Tendido electrico" class="hidden peer"
+                                type="checkbox" />
+                            <span
+                                class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary transition-colors">bolt</span>
+                            <span class="text-xs font-medium text-center">Tendido electrico</span>
+                            <div
+                                class="absolute inset-0 border-2 border-primary-container rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+                            </div>
+                        </label>
+                        <label
+                            class="group flex flex-col items-center justify-center p-4 bg-surface-container-lowest rounded-xl cursor-pointer hover:bg-primary-container/10 border-2 border-transparent transition-all relative">
+                            <input id="obs-monte" name="obstaculos[]" value="Monte" class="hidden peer"
+                                type="checkbox" />
+                            <span
+                                class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary transition-colors">forest</span>
+                            <span class="text-xs font-medium text-center">Monte</span>
+                            <div
+                                class="absolute inset-0 border-2 border-primary-container rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+                            </div>
+                        </label>
+                        <label
+                            class="group flex flex-col items-center justify-center p-4 bg-surface-container-lowest rounded-xl cursor-pointer hover:bg-primary-container/10 border-2 border-transparent transition-all relative">
+                            <input id="obs-molinos" name="obstaculos[]" value="Molinos" class="hidden peer"
+                                type="checkbox" />
+                            <span
+                                class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary transition-colors">wind_power</span>
+                            <span class="text-xs font-medium text-center">Molinos</span>
+                            <div
+                                class="absolute inset-0 border-2 border-primary-container rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+                            </div>
+                        </label>
+                        <label
+                            class="group flex flex-col items-center justify-center p-4 bg-surface-container-lowest rounded-xl cursor-pointer hover:bg-primary-container/10 border-2 border-transparent transition-all relative">
+                            <input id="obs-laguna" name="obstaculos[]" value="Laguna/Arroyo" class="hidden peer"
+                                type="checkbox" />
+                            <span
+                                class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary transition-colors">water</span>
+                            <span class="text-xs font-medium text-center">Laguna/Arroyo</span>
+                            <div
+                                class="absolute inset-0 border-2 border-primary-container rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+                            </div>
+                        </label>
+                        <label
+                            class="group flex flex-col items-center justify-center p-4 bg-surface-container-lowest rounded-xl cursor-pointer hover:bg-primary-container/10 border-2 border-transparent transition-all relative">
+                            <input id="obs-otros" name="obstaculos[]" value="Otros" class="hidden peer"
+                                type="checkbox" />
+                            <span
+                                class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary transition-colors">more_horiz</span>
+                            <span class="text-xs font-medium text-center">Otros</span>
+                            <div
+                                class="absolute inset-0 border-2 border-primary-container rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <!-- Bloque 3: Receta de Siembra -->
+            <div class="bg-surface-container-low rounded-lg p-8 md:p-10">
+                <div class="flex items-center gap-3 mb-8">
+                    <div
+                        class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+                        <span class="material-symbols-outlined">agriculture</span>
+                    </div>
+                    <h2 class="text-2xl font-bold tracking-tight">Receta de Siembra</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="space-y-2" data-field="especie-siembra">
+                        <label
+                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Especie
+                            a sembrar</label>
+                        <input id="especie-siembra" name="especie_siembra"
+                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
+                            placeholder="Eje: Ryegrass" type="text" />
+                        <p class="field-error-msg"><span class="material-symbols-outlined"
+                                style="font-size:14px">error</span>Este campo es obligatorio</p>
+                    </div>
+                    <div class="space-y-2" data-field="kg-ha">
+                        <label
+                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Kg/Ha</label>
+                        <input id="kg-ha" name="kg_ha"
+                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
+                            placeholder="0" type="number" />
+                        <p class="field-error-msg"><span class="material-symbols-outlined"
+                                style="font-size:14px">error</span>Este campo es obligatorio</p>
+                    </div>
+                    <div class="space-y-2" data-field="presentacion-semilla">
+                        <label
+                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Presentación</label>
+                        <select id="presentacion-semilla" name="presentacion"
+                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm appearance-none">
+                            <option value="">Seleccionar presentación</option>
+                            <option value="Granel">Granel</option>
+                            <option value="Bolsa">Bolsa</option>
+                            <option value="Big Bag">Big Bag</option>
+                            <option value="Bidon">Bidon</option>
+                        </select>
+                        <p class="field-error-msg"><span class="material-symbols-outlined"
+                                style="font-size:14px">error</span>Seleccioná una presentación</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Action Area -->
+            <div class="flex flex-col items-end gap-3 pt-8">
+                <button id="submit-btn"
+                    class="bg-primary-container text-on-primary-container font-bold text-lg px-12 py-5 rounded-full shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center gap-2 group"
+                    type="submit">
+                    Enviar Solicitud
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">send</span>
+                </button>
+                <p id="form-validation-msg" class="hidden items-center gap-1 text-sm font-medium text-error">
+                    <span class="material-symbols-outlined" style="font-size:18px;color:#ba1a1a">error</span>
+                    Completá los campos obligatorios antes de enviar.
+                </p>
+            </div>
+        </form>
+
+        <!-- Map Modal -->
+        <div class="hidden fixed inset-0 z-[100] flex items-center justify-center md:p-4" id="map-modal">
+            <div class="absolute inset-0 bg-on-surface/40 backdrop-blur-sm" id="map-backdrop"></div>
+            <div
+                class="bg-surface relative w-full h-full md:h-auto md:w-[80vw] lg:w-[60vw] md:min-h-[520px] md:max-h-[90vh] md:rounded-[2rem] shadow-2xl overflow-hidden flex flex-col">
+                <!-- Header -->
+                <div class="flex-none flex justify-between items-center p-4 md:p-6 border-b border-surface-container">
+                    <h3 class="text-xl md:text-2xl font-black text-on-surface tracking-tight">Ubicar Lote</h3>
+                    <button type="button" class="text-on-surface-variant hover:text-error transition-colors"
+                        id="map-close-btn">
+                        <span class="material-symbols-outlined text-3xl">close</span>
+                    </button>
+                </div>
+                <!-- Banner Instruction (cambia según el paso) -->
+                <div
+                    class="flex-none bg-primary-container/20 px-4 md:px-6 py-3 border-b border-primary-container/30 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary-container">info</span>
+                    <p class="text-xs md:text-sm font-semibold text-on-surface" id="map-banner-text">Ingresá la
+                        localidad más cercana a tu lote y hacé clic en Buscar.</p>
+                </div>
+                <!-- Controls and Map area (scrolleable) -->
+                <div class="flex-grow flex flex-col p-4 md:p-6 gap-3 md:gap-4 min-h-0 overflow-y-auto">
+                    <!-- Search bar -->
+                    <div class="flex-none flex flex-col sm:flex-row gap-2 w-full">
+                        <div class="relative flex-grow min-w-0">
+                            <input id="map-search-input"
+                                class="w-full bg-surface-container-lowest border border-outline-variant rounded-full px-6 py-3 focus:ring-2 focus:ring-primary-container focus:outline-none"
+                                placeholder="Ingresar localidad..." type="text" />
+                            <div id="search-suggestions"
+                                class="absolute z-[1001] left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl hidden max-h-60 overflow-y-auto">
+                            </div>
+                        </div>
+                        <button id="map-search-btn" type="button"
+                            class="bg-surface-container-high text-on-surface font-bold px-6 py-3 rounded-full hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
+                            <span class="material-symbols-outlined">search</span> Buscar
+                        </button>
+                    </div>
+                    <!-- Map Wrapper (oculto hasta buscar) -->
+                    <div id="map-wrapper"
+                        class="hidden w-full flex-grow min-h-[260px] relative z-10 rounded-xl md:rounded-2xl overflow-hidden bg-surface-container border border-outline-variant">
+                        <!-- Helper Flotante -->
+                        <div id="map-click-helper"
+                            class="absolute top-6 left-1/2 -translate-x-1/2 z-[1000] bg-primary-container text-on-primary-container font-black px-6 py-3 rounded-full shadow-lg flex items-center justify-center gap-2 pointer-events-none transition-opacity duration-300">
+                            <span class="material-symbols-outlined animate-bounce">touch_app</span>
+                            <span class="text-sm">Buscá tu lote y hacé clic para marcarlo</span>
+                        </div>
+                        <div id="map-container" class="absolute inset-0 w-full h-full">
+                        </div>
+                    </div>
+                </div>
+                <!-- Confirm Button — siempre visible, anclado al pie del modal -->
+                <div class="flex-none border-t border-surface-container p-4 md:p-6 flex justify-center">
+                    <button type="button" id="map-confirm-btn"
+                        class="bg-[#47C278] text-white font-bold text-lg px-8 py-3 md:py-4 rounded-full shadow-md hover:shadow-lg transition-all w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed">
+                        Confirmar Ubicación
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Modal -->
+        <div class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4" id="success-modal">
+            <div class="absolute inset-0 bg-on-surface/40 backdrop-blur-sm"></div>
+            <div
+                class="bg-surface relative w-full max-w-lg rounded-[2.5rem] shadow-2xl p-10 text-center flex flex-col items-center">
+                <div
+                    class="w-20 h-20 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center mb-6">
+                    <span class="material-symbols-outlined text-5xl"
+                        style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                </div>
+                <h3 class="text-3xl font-black text-on-surface mb-4 tracking-tight">¡Solicitud enviada con éxito!</h3>
+                <p class="text-on-surface-variant mb-10 leading-relaxed text-lg">
+                    Hemos recibido tu receta técnica de siembra. Un coordinador de Vistaguay revisará los datos y se
+                    comunicará con vos a la brevedad para finalizar la gestión de tu vuelo.
+                </p>
+                <button
+                    class="bg-[#47C278] text-white font-bold text-lg px-12 py-5 rounded-full shadow-md hover:shadow-lg transition-all w-full active:scale-95"
+                    id="modal-confirm-btn" type="button">
+                    Entendido
+                </button>
+            </div>
+        </div>
+
+    </main>
+    <!-- Success View: Próximamente -->
+    <main class="hidden flex-grow pt-16 flex flex-col items-center justify-center relative overflow-hidden bg-white"
+        id="proximamente-view">
+        <!-- Subtle Background Texture -->
+        <div class="absolute inset-0 z-0 opacity-40 pointer-events-none">
+            <div
+                class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary-container/20 blur-[100px]">
+            </div>
+            <div
+                class="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] rounded-full bg-secondary-container/30 blur-[80px]">
+            </div>
+        </div>
+        <section class="relative z-10 w-full max-w-3xl px-8 py-12 flex flex-col items-center text-center">
+            <!-- Icon/Visual Anchor -->
+            <div
+                class="mb-8 p-6 bg-surface-container-lowest rounded-xl shadow-[0_32px_64px_-16px_rgba(25,28,30,0.04)] inline-flex items-center justify-center">
+                <span class="material-symbols-outlined text-primary-container text-6xl"
+                    style="font-variation-settings: 'wght' 200;">precision_manufacturing</span>
+            </div>
+            <!-- Content -->
+            <h1 class="text-on-surface text-5xl md:text-6xl font-extrabold tracking-tighter mb-6">
+                Próximamente
+            </h1>
+            <p class="text-on-surface-variant text-lg md:text-xl leading-relaxed mb-10 max-w-xl mx-auto">
+                Estamos integrando más servicios dentro de la plataforma. Para una gestión completa de tus vuelos,
+                descárgate la App de Vistaguay.
+            </p>
+            <button
+                class="bg-primary-container text-on-primary-container font-bold px-10 py-4 rounded-full text-lg shadow-lg shadow-primary-container/20 active:scale-95 transition-all hover:brightness-105">
+                <a href="https://onelink.to/6g4qbv" target="_blank" rel="noopener noreferrer">Descargar App</a>
+            </button>
+            <!-- Support Section -->
+            <div class="mt-10 pt-6 w-full">
+                <!-- Visual Divider -->
+                <div class="w-full h-px bg-gradient-to-r from-transparent via-outline-variant/30 to-transparent mb-12">
+                </div>
+                <div
+                    class="bg-surface-container-low rounded-lg p-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div class="text-left">
+                        <h2 class="text-on-surface text-2xl font-bold mb-2">¿Necesitás más información?</h2>
+                        <p class="text-on-surface-variant">Comunicate con nuestro equipo de soporte.</p>
+                    </div>
+                    <button
+                        class="bg-white border-2 border-outline-variant hover:border-primary-container hover:text-primary transition-colors text-on-surface-variant font-semibold px-8 py-3 rounded-full active:scale-95">
+                        <a href="https://api.whatsapp.com/send?phone=5493516887507" target="_blank"
+                            rel="noopener noreferrer">Contactar a Soporte</a>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Script to handle transitions -->
+    <script>
+        const siembraForm = document.getElementById('siembra-form');
+        const successModal = document.getElementById('success-modal');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const solicitudView = document.getElementById('solicitud-view');
+        const proximamenteView = document.getElementById('proximamente-view');
+        const cultivoSelect = document.getElementById('cultivo-select');
+        const otroCultivoContainer = document.getElementById('otro-cultivo-container');
+
+        cultivoSelect.addEventListener('change', function (e) {
+            if (e.target.value === 'Otro') {
+                otroCultivoContainer.classList.remove('hidden');
+            } else {
+                otroCultivoContainer.classList.add('hidden');
+            }
+        });
+
+        const submitBtn = document.getElementById('submit-btn');
+        const formValidationMsg = document.getElementById('form-validation-msg');
+
+        // === Helpers de validación estilo Material UI ===
+        function setFieldError(fieldId, hasError) {
+            const wrapper = document.querySelector(`[data-field="${fieldId}"]`);
+            if (!wrapper) return;
+            if (hasError) {
+                wrapper.classList.add('field-error');
+            } else {
+                wrapper.classList.remove('field-error');
+            }
+        }
+
+        function validateForm() {
+            const isCultivoOtro = cultivoSelect.value === 'Otro';
+            const fields = [
+                { id: 'nombre-empresa', value: document.getElementById('nombre-empresa').value.trim() },
+                { id: 'fecha-aplicacion', value: document.getElementById('fecha-aplicacion').value.trim() },
+                { id: 'numero-contacto', value: document.getElementById('numero-contacto').value.trim() },
+                { id: 'lote-location-input', value: document.getElementById('lote-location-input').value.trim() },
+                { id: 'hectareas', value: document.getElementById('hectareas').value.trim() },
+                { id: 'cultivo-select', value: cultivoSelect.value },
+                { id: 'especie-siembra', value: document.getElementById('especie-siembra').value.trim() },
+                { id: 'kg-ha', value: document.getElementById('kg-ha').value.trim() },
+                { id: 'presentacion-semilla', value: document.getElementById('presentacion-semilla').value },
+            ];
+
+            let hasErrors = false;
+            fields.forEach(({ id, value }) => {
+                const invalid = !value;
+                setFieldError(id, invalid);
+                if (invalid) hasErrors = true;
+            });
+
+            // Validar "otro cultivo" solo si cultivo = Otro
+            if (isCultivoOtro) {
+                const otroCultivoVal = document.getElementById('otro-cultivo-input').value.trim();
+                const invalid = !otroCultivoVal;
+                setFieldError('otro-cultivo-input', invalid);
+                if (invalid) hasErrors = true;
+            } else {
+                setFieldError('otro-cultivo-input', false);
+            }
+
+            return !hasErrors;
+        }
+
+        // Limpiar error SOLO del campo que se corrigió (no re-marcar otros)
+        function clearFieldIfFilled(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const evt = (el.tagName === 'SELECT' || el.type === 'date') ? 'change' : 'input';
+            el.addEventListener(evt, () => {
+                // Solo limpia el error de este campo si ya tiene valor
+                if (el.value.trim()) setFieldError(id, false);
+                // Oculta el mensaje global solo si todos tienen valor (sin marcar nada en rojo)
+                const allFilled = [
+                    'nombre-empresa', 'fecha-aplicacion', 'numero-contacto', 'lote-location-input',
+                    'hectareas', 'cultivo-select', 'especie-siembra', 'kg-ha', 'presentacion-semilla'
+                ].every(fid => {
+                    const f = document.getElementById(fid);
+                    return f && f.value.trim();
+                });
+                if (allFilled) formValidationMsg.classList.add('hidden');
+            });
+        }
+
+        ['nombre-empresa', 'fecha-aplicacion', 'numero-contacto', 'lote-location-input',
+            'hectareas', 'cultivo-select', 'especie-siembra', 'kg-ha', 'presentacion-semilla', 'otro-cultivo-input']
+            .forEach(clearFieldIfFilled);
+
+        siembraForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // --- Validación ---
+            const isValid = validateForm();
+            if (!isValid) {
+                formValidationMsg.classList.remove('hidden');
+                formValidationMsg.style.display = 'flex';
+                // Shake animation en el botón
+                submitBtn.classList.remove('shake');
+                void submitBtn.offsetWidth; // reflow para reiniciar animación
+                submitBtn.classList.add('shake');
+                return;
+            }
+
+            formValidationMsg.classList.add('hidden');
+
+            // Capturamos los obstáculos seleccionados como una lista de texto
+            const obstaculosCompilados = Array.from(document.querySelectorAll('input[name="obstaculos[]"]:checked'))
+                .map(cb => cb.value)
+                .join(', ');
+
+            // Estructuramos el JSON para n8n
+            const formData = {
+                empresa: document.getElementById('nombre-empresa').value,
+                fecha_aplicacion: document.getElementById('fecha-aplicacion').value,
+                contacto: document.getElementById('numero-contacto').value,
+                localidad_texto: document.getElementById('map-search-input').value,
+                coordenadas: `${document.getElementById('lote-lat-input').value}, ${document.getElementById('lote-lng-input').value}`,
+                maps_link: `https://www.google.com/maps?q=${document.getElementById('lote-lat-input').value},${document.getElementById('lote-lng-input').value}`,
+                hectareas: document.getElementById('hectareas').value,
+                cultivo: cultivoSelect.value === 'Otro' ? document.getElementById('otro-cultivo-input').value : cultivoSelect.value,
+                obstaculos: obstaculosCompilados,
+                especie: document.getElementById('especie-siembra').value,
+                dosis: document.getElementById('kg-ha').value,
+                presentacion: document.getElementById('presentacion-semilla').value
+            };
+
+            console.log('📤 Enviando datos:', formData);
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="material-symbols-outlined">sync</span> Enviando...';
+
+            try {
+                const response = await fetch('https://n8n-nube-jw30.onrender.com/webhook/siembra-vistaguay-mvp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                console.log('📥 Respuesta del servidor:', response.status, response.statusText);
+
+                if (response.ok) {
+                    successModal.classList.remove('hidden');
+                } else {
+                    const errorText = await response.text().catch(() => '');
+                    console.error('Error del servidor:', errorText);
+                    alert(`Error al enviar la solicitud (${response.status}). Por favor, reintentá.`);
+                }
+            } catch (error) {
+                console.error('❌ Error de conexión:', error);
+                alert('No se pudo conectar con el servidor. Verificá tu conexión a internet y reintentá.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Enviar Solicitud <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">send</span>';
+            }
+        });
+
+        modalConfirmBtn.addEventListener('click', function () {
+            successModal.classList.add('hidden');
+            solicitudView.classList.add('hidden');
+            proximamenteView.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Lógica del Mapa (Leaflet + Nominatim)
+        const ubicacionLoteTrigger = document.getElementById('ubicacion-lote-trigger');
+        const mapModal = document.getElementById('map-modal');
+        const mapCloseBtn = document.getElementById('map-close-btn');
+        const mapBackdrop = document.getElementById('map-backdrop');
+        const mapContainerEl = document.getElementById('map-container');
+        const mapWrapperEl = document.getElementById('map-wrapper');
+        const mapClickHelper = document.getElementById('map-click-helper');
+        const mapSearchBtn = document.getElementById('map-search-btn');
+        const mapSearchInput = document.getElementById('map-search-input');
+        const mapConfirmBtn = document.getElementById('map-confirm-btn');
+        const loteLocationInput = document.getElementById('lote-location-input');
+        const loteLatInput = document.getElementById('lote-lat-input');
+        const loteLngInput = document.getElementById('lote-lng-input');
+        const suggestionsContainer = document.getElementById('search-suggestions');
+        let debounceTimer;
+
+        let map = null;
+        let marker = null;
+        let currentLat = null;
+        let currentLng = null;
+
+        function initMap() {
+            if (map !== null) return;
+            map = L.map(mapContainerEl).setView([-38.4161, -63.6167], 5); // Centro Argentina inicial
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(map);
+
+            map.on('click', function (e) {
+                currentLat = e.latlng.lat;
+                currentLng = e.latlng.lng;
+                if (marker) {
+                    marker.setLatLng(e.latlng);
+                } else {
+                    marker = L.marker(e.latlng).addTo(map);
+                }
+                mapConfirmBtn.disabled = false;
+                mapClickHelper.style.opacity = '0'; // Ocultar el helper al cliquear
+            });
+        }
+
+        function openMapModal() {
+            mapModal.classList.remove('hidden');
+            // Resetear al paso 1: ocultar mapa
+            mapWrapperEl.classList.add('hidden');
+            mapConfirmBtn.disabled = marker === null;
+            document.getElementById('map-banner-text').textContent = 'Ingresá la localidad más cercana a tu lote y hacé clic en Buscar.';
+            setTimeout(() => {
+                if (map !== null) map.invalidateSize();
+            }, 100);
+        }
+
+        function closeMapModal() {
+            mapModal.classList.add('hidden');
+        }
+
+        ubicacionLoteTrigger.addEventListener('click', openMapModal);
+        loteLocationInput.addEventListener('click', openMapModal);
+        mapCloseBtn.addEventListener('click', closeMapModal);
+        mapBackdrop.addEventListener('click', closeMapModal);
+
+        // --- NUEVA LÓGICA: Autocompletado mientras escribís ---
+        mapSearchInput.addEventListener('input', function () {
+            const query = this.value.trim();
+            clearTimeout(debounceTimer);
+
+            if (query.length < 3) {
+                suggestionsContainer.innerHTML = '';
+                suggestionsContainer.classList.add('hidden');
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                // Buscamos solo en Argentina (countrycodes=ar)
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ar&addressdetails=1&limit=5`)
+                    .then(response => response.json())
+                    .then(data => {
+                        suggestionsContainer.innerHTML = '';
+                        if (data.length > 0) {
+                            data.forEach(place => {
+                                const addr = place.address;
+                                const fullText = place.display_name;
+
+                                // 1. LOCALIDAD: Buscamos en todas las etiquetas posibles
+                                let localidad = addr.city || addr.town || addr.village || addr.hamlet || addr.municipality || addr.locality || "";
+                                if (!localidad) { localidad = fullText.split(',')[0]; }
+
+                                // 2. PROVINCIA: El escáner reforzado
+                                const provinciasArg = [
+                                    "Santa Fe", "Córdoba", "Buenos Aires", "Entre Ríos", "Corrientes", "Misiones",
+                                    "Chaco", "Formosa", "Santiago del Estero", "Tucumán", "Salta", "Jujuy",
+                                    "Catamarca", "La Rioja", "San Juan", "Mendoza", "San Luis", "La Pampa",
+                                    "Neuquén", "Río Negro", "Chubut", "Santa Cruz", "Tierra del Fuego"
+                                ];
+                                let provincia = addr.state || addr.province || addr.state_district || addr.region || "";
+                                if (!provincia) { provincia = provinciasArg.find(p => fullText.includes(p)) || ""; }
+
+                                // 3. DEPARTAMENTO / PARTIDO
+                                let depto = addr.county || addr.district || "";
+
+                                // 4. LIMPIEZA DE TEXTO
+                                const limpiar = (t) => {
+                                    if (!t) return "";
+                                    return t.replace(/Municipio de /g, "")
+                                        .replace(/Pedanía /g, "")
+                                        .replace(/Departamento /g, "")
+                                        .replace(/Partido de /g, "")
+                                        .replace(/Provincia de /g, "")
+                                        .trim();
+                                };
+
+                                let locLimpia = limpiar(localidad);
+                                let deptoLimpio = limpiar(depto);
+                                let provLimpia = limpiar(provincia);
+
+                                // 5. ARMADO SIN REPETICIONES
+                                let partes = [locLimpia];
+                                if (deptoLimpio && deptoLimpio.toLowerCase() !== locLimpia.toLowerCase()) {
+                                    partes.push(deptoLimpio);
+                                }
+                                if (provLimpia && provLimpia.toLowerCase() !== locLimpia.toLowerCase() &&
+                                    provLimpia.toLowerCase() !== deptoLimpio.toLowerCase() && provLimpia !== "Argentina") {
+                                    partes.push(provLimpia);
+                                }
+
+                                const nombreFinal = partes.join(", ") + ", Argentina";
+
+                                // 6. CREAR ELEMENTO VISUAL
+                                const div = document.createElement('div');
+                                div.className = 'p-4 hover:bg-gray-100 cursor-pointer text-sm border-b border-gray-50 last:border-0';
+                                div.textContent = nombreFinal;
+
+                                div.onclick = () => {
+                                    const { lat, lon } = place;
+
+                                    // Mostrar mapa si estaba oculto
+                                    mapWrapperEl.classList.remove('hidden');
+                                    mapClickHelper.style.opacity = '1';
+
+                                    initMap();
+                                    setTimeout(() => {
+                                        map.invalidateSize();
+                                        map.setView([lat, lon], 13);
+                                        mapConfirmBtn.disabled = marker === null;
+                                        // Scroll suave para mostrar el mapa completo
+                                        mapWrapperEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                    }, 100);
+
+                                    mapSearchInput.value = nombreFinal;
+                                    suggestionsContainer.classList.add('hidden');
+                                    document.getElementById('map-banner-text').textContent = 'Ubicación seleccionada: ' + nombreFinal + '. Ahora hacé clic en el mapa para ubicar el pin.';
+                                };
+                                suggestionsContainer.appendChild(div);
+                            });
+                            suggestionsContainer.classList.remove('hidden');
+                        } else {
+                            suggestionsContainer.classList.add('hidden');
+                        }
+                    });
+            }, 300); // 300ms de espera para no saturar el servidor
+        });
+
+        // Cerrar sugerencias si se hace clic afuera del buscador
+        document.addEventListener('click', (e) => {
+            if (!mapSearchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                suggestionsContainer.classList.add('hidden');
+            }
+        });
+
+        mapSearchBtn.addEventListener('click', function () {
+            const query = mapSearchInput.value.trim();
+            if (!query) return;
+            mapSearchBtn.disabled = true;
+            mapSearchBtn.innerHTML = '<span class="material-symbols-outlined">sync</span> Buscando...';
+
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ar&addressdetails=1&limit=5`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const { lat, lon } = data[0];
+                        // Revelar mapa en el primer resultado exitoso
+                        mapWrapperEl.classList.remove('hidden');
+                        mapClickHelper.style.opacity = '1';
+                        mapConfirmBtn.disabled = marker === null;
+                        document.getElementById('map-banner-text').textContent = 'Ahora hacé clic en el mapa para colocar el pin sobre tu lote.';
+                        // Inicializar el mapa si todavía no fue creado
+                        initMap();
+                        setTimeout(() => {
+                            map.invalidateSize();
+                            map.setView([lat, lon], 12);
+                            // Scroll suave para mostrar el mapa completo
+                            mapWrapperEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }, 100);
+                    } else {
+                        alert('No se encontró la localidad. Probá con otra búsqueda.');
+                    }
+                })
+                .catch(err => {
+                    alert('Error en la búsqueda.');
+                })
+                .finally(() => {
+                    mapSearchBtn.disabled = false;
+                    mapSearchBtn.innerHTML = '<span class="material-symbols-outlined">search</span> Buscar';
+                });
+        });
+
+        mapSearchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                mapSearchBtn.click();
+            }
+        });
+
+        mapConfirmBtn.addEventListener('click', function () {
+            if (currentLat !== null && currentLng !== null) {
+                loteLatInput.value = currentLat;
+                loteLngInput.value = currentLng;
+                loteLocationInput.value = `📍 ${currentLat.toFixed(5)}, ${currentLng.toFixed(5)}`;
+                // El campo es readonly, así que limpiamos el error manualmente
+                setFieldError('lote-location-input', false);
+                closeMapModal();
+            }
+        });
+    </script>
+</body>
+
+</html>

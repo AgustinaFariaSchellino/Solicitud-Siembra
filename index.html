@@ -5,26 +5,114 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Vistaguay - Solicitud de siembra con Dron</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <title>Solicitud de Siembra - Vistaguay</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap"
         rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f8f9fb",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#edeef0",
+                        "secondary": "#585f6c",
+                        "on-surface": "#191c1e",
+                        "tertiary-fixed-dim": "#ffb3b4",
+                        "inverse-primary": "#64dd90",
+                        "tertiary": "#9e3f45",
+                        "surface-container-high": "#e7e8ea",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f3",
+                        "primary-fixed-dim": "#64dd90",
+                        "primary-fixed": "#82faaa",
+                        "surface-container-highest": "#e1e2e4",
+                        "secondary-fixed-dim": "#c0c7d6",
+                        "on-surface-variant": "#3e4a3f",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#5e6572",
+                        "on-background": "#191c1e",
+                        "surface-container-low": "#f3f4f6",
+                        "surface-bright": "#f8f9fb",
+                        "on-secondary-fixed": "#151c27",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#ffdad9",
+                        "on-secondary-fixed-variant": "#404754",
+                        "on-primary-fixed-variant": "#00522a",
+                        "on-primary-fixed": "#00210e",
+                        "secondary-fixed": "#dce2f3",
+                        "primary": "#47C278",
+                        "surface-variant": "#e1e2e4",
+                        "on-secondary": "#ffffff",
+                        "background": "#f8f9fb",
+                        "secondary-container": "#dce2f3",
+                        "tertiary-container": "#ff8a8e",
+                        "on-tertiary-fixed-variant": "#7f282f",
+                        "on-tertiary-fixed": "#40000a",
+                        "outline": "#6d7a6f",
+                        "primary-container": "#47c278",
+                        "surface-dim": "#d9dadc",
+                        "on-tertiary-container": "#772129",
+                        "outline-variant": "#bdcabc",
+                        "on-primary-container": "#004b26",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2e3132",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tint": "#47C278"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
     <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #ffffff;
+        .step-hidden {
+            display: none;
         }
 
-        /* === Material UI Error States === */
+        .step-active {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .field-error input,
         .field-error select {
             outline: none !important;
@@ -41,19 +129,11 @@
             background-color: #fff8f7 !important;
         }
 
-        .field-error-msg {
-            display: none;
-            align-items: center;
-            gap: 4px;
-            color: #ba1a1a;
-            font-size: 0.72rem;
-            font-weight: 500;
-            margin-top: 4px;
-            margin-left: 1rem;
-        }
-
-        .field-error .field-error-msg {
-            display: flex;
+        .field-error .segmented-btn-group {
+            outline: 2px solid #ba1a1a;
+            outline-offset: 2px;
+            border-radius: 9999px;
+            background-color: #fff8f7;
         }
 
         @keyframes shake {
@@ -85,174 +165,150 @@
         .shake {
             animation: shake 0.35s ease;
         }
-    </style>
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "outline": "#6d7a6f",
-                        "surface-container-highest": "#e1e2e4",
-                        "surface-bright": "#f8f9fb",
-                        "on-primary-container": "#004b26",
-                        "background": "#ffffff",
-                        "on-secondary-container": "#5e6572",
-                        "on-primary-fixed-variant": "#00522a",
-                        "on-error-container": "#93000a",
-                        "primary-fixed-dim": "#64dd90",
-                        "tertiary": "#9e3f45",
-                        "on-error": "#ffffff",
-                        "error-container": "#ffdad6",
-                        "surface-dim": "#d9dadc",
-                        "surface-variant": "#e1e2e4",
-                        "surface": "#ffffff",
-                        "surface-container": "#edeef0",
-                        "secondary-fixed": "#dce2f3",
-                        "on-surface": "#191c1e",
-                        "error": "#ba1a1a",
-                        "on-background": "#191c1e",
-                        "primary-container": "#47c278",
-                        "primary-fixed": "#82faaa",
-                        "surface-container-high": "#e7e8ea",
-                        "on-tertiary-fixed": "#40000a",
-                        "on-surface-variant": "#3e4a3f",
-                        "secondary": "#585f6c",
-                        "inverse-primary": "#64dd90",
-                        "on-secondary-fixed": "#151c27",
-                        "secondary-fixed-dim": "#c0c7d6",
-                        "on-secondary-fixed-variant": "#404754",
-                        "outline-variant": "#bdcabc",
-                        "on-secondary": "#ffffff",
-                        "on-primary": "#ffffff",
-                        "inverse-surface": "#2e3132",
-                        "on-tertiary-container": "#772129",
-                        "surface-tint": "#006d3a",
-                        "tertiary-container": "#ff8a8e",
-                        "tertiary-fixed": "#ffdad9",
-                        "surface-container-lowest": "#ffffff",
-                        "surface-container-low": "#f3f4f6",
-                        "secondary-container": "#dce2f3",
-                        "tertiary-fixed-dim": "#ffb3b4",
-                        "primary": "#47c278",
-                        "inverse-on-surface": "#f0f1f3",
-                        "on-tertiary": "#ffffff",
-                        "on-tertiary-fixed-variant": "#7f282f",
-                        "on-primary-fixed": "#00210e"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "1rem",
-                        "lg": "2rem",
-                        "xl": "3rem",
-                        "full": "9999px"
-                    }
-                },
-            }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
         }
-    </script>
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
 </head>
 
-<body class="bg-surface text-on-surface min-h-screen flex flex-col">
-    <!-- Header -->
-    <header
-        class="fixed top-0 w-full z-50 bg-[#FFFFFF] flex justify-between items-center px-8 h-16 border-b border-surface-container">
-        <div class="flex items-center gap-2">
-            <span class="text-2xl font-black tracking-tighter text-[#191C1E]">Vistaguay</span>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+    <!-- Pantalla final: Próximamente -->
+    <div class="hidden fixed inset-0 z-[200] bg-surface overflow-y-auto" id="proximamente-view">
+        <!-- Same floating header but with "Nueva solicitud" button -->
+        <div class="fixed top-0 left-0 w-full z-50 px-4 pt-4 pb-2 bg-white/80 backdrop-blur-md">
+            <div class="max-w-xl mx-auto">
+                <header
+                    class="flex justify-between items-center px-4 py-3 bg-white rounded-2xl shadow-sm border border-outline-variant/20">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-primary-container rounded-full flex items-center justify-center">
+                            <svg viewBox="0 0 24 24" class="w-6 h-6 text-on-primary-container" fill="currentColor">
+                                <path
+                                    d="M12,2C6.47,2,2,6.47,2,12s4.47,10,10,10s10-4.47,10-10S17.53,2,12,2z M12,20c-4.41,0-8-3.59-8-8s3.59-8,8-8s8,3.59,8,8 S16.41,20,12,20z M15.59,12.59L19,16l-1.41,1.41L14.17,14L12,16.17L9.83,14L6.41,17.41L5,16l3.41-3.41L5,9.17L6.41,7.76L9.83,11.17 L12,9L14.17,11.17l3.41-3.41L19,9.17L15.59,12.59z" />
+                            </svg>
+                        </div>
+                        <h1 class="font-inter text-on-surface font-bold tracking-tight text-lg">Solicitud de Aplicación
+                        </h1>
+                    </div>
+                    <button onclick="location.reload()"
+                        class="h-9 px-4 bg-[#47C278] text-white text-sm font-bold rounded-full shadow-md shadow-[#47C278]/20 active:scale-95 transition-all">
+                        Nueva solicitud
+                    </button>
+                </header>
+            </div>
         </div>
-    </header>
-    <!-- Main View: Solicitud de Siembra -->
-    <main class="pt-24 pb-16 px-4 md:px-8 max-w-5xl mx-auto w-full" id="solicitud-view">
-        <section class="mb-12">
-            <h1 class="text-4xl md:text-5xl font-black tracking-tight text-on-surface mb-4">Solicitud de siembra con
-                Dron</h1>
-            <p class="text-lg text-on-surface-variant max-w-2xl leading-relaxed">
-                Completá este formulario para iniciar tu pedido. Nosotros nos encargamos de seleccionar al piloto de la
-                Red Experts más capacitado para asegurar el éxito de tu operación.
-            </p>
-        </section>
-        <form class="space-y-8" id="siembra-form">
-            <!-- Bloque 1: Datos de Negocio -->
-            <div class="bg-surface-container-low rounded-lg p-8 md:p-10">
-                <div class="flex items-center gap-3 mb-8">
-                    <div
-                        class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
-                        <span class="material-symbols-outlined">business_center</span>
+        <!-- Content Area -->
+        <div class="min-h-full flex flex-col items-center justify-center px-6 pt-32 pb-16">
+            <section class="w-full max-w-lg flex flex-col items-center text-center gap-6">
+                <h2 class="text-4xl font-extrabold tracking-tighter text-on-surface">Próximamente</h2>
+                <p class="text-on-surface-variant text-base leading-relaxed max-w-sm">
+                    Estamos integrando más servicios dentro de la plataforma. Para una gestión completa de tus vuelos,
+                    descargá la App de Vistaguay.
+                </p>
+                <a href="https://onelink.to/6g4qbv" target="_blank" rel="noopener noreferrer"
+                    class="w-full h-14 bg-[#47C278] text-white font-bold rounded-full shadow-lg shadow-[#47C278]/20 active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">download</span>
+                    Descargar App
+                </a>
+                <div class="w-full h-px bg-gradient-to-r from-transparent via-outline-variant/30 to-transparent"></div>
+                <div class="w-full bg-surface-container-low rounded-2xl p-6 flex flex-col gap-4 text-left">
+                    <div>
+                        <h3 class="text-on-surface font-bold text-lg">¿Necesitás más información?</h3>
+                        <p class="text-on-surface-variant text-sm">Comunicate con nuestro equipo de soporte.</p>
                     </div>
-                    <h2 class="text-2xl font-bold tracking-tight">Datos de Negocio</h2>
+                    <a href="https://api.whatsapp.com/send?phone=5493516887507" target="_blank"
+                        rel="noopener noreferrer"
+                        class="h-12 flex items-center justify-center gap-2 border-2 border-outline-variant/30 text-on-surface-variant font-semibold rounded-full hover:border-[#47C278] hover:text-[#47C278] transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-xl">support_agent</span>
+                        Contactar a Soporte
+                    </a>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="space-y-2" data-field="nombre-empresa">
-                        <label
-                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Nombre y
-                            Apellido / Empresa</label>
-                        <input id="nombre-empresa" name="nombre_empresa"
-                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
-                            placeholder="Ej: Juan Pérez" type="text" />
-                        <p class="field-error-msg"><span class="material-symbols-outlined"
-                                style="font-size:14px">error</span>Este campo es obligatorio</p>
+            </section>
+        </div>
+    </div>
+    <!-- Top AppBar Component -->
+    <div class="fixed top-0 left-0 w-full z-50 px-4 pt-4 pb-2 bg-surface/80 backdrop-blur-md">
+        <div class="max-w-xl mx-auto">
+            <header
+                class="flex justify-between items-center px-4 py-3 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-outline-variant/20 mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary-container rounded-full flex items-center justify-center">
+                        <svg viewBox="0 0 24 24" class="w-6 h-6 text-on-primary-container" fill="currentColor">
+                            <path
+                                d="M12,2C6.47,2,2,6.47,2,12s4.47,10,10,10s10-4.47,10-10S17.53,2,12,2z M12,20c-4.41,0-8-3.59-8-8s3.59-8,8-8s8,3.59,8,8 S16.41,20,12,20z M15.59,12.59L19,16l-1.41,1.41L14.17,14L12,16.17L9.83,14L6.41,17.41L5,16l3.41-3.41L5,9.17L6.41,7.76L9.83,11.17 L12,9L14.17,11.17l3.41-3.41L19,9.17L15.59,12.59z" />
+                        </svg>
                     </div>
-                    <div class="space-y-2" data-field="fecha-aplicacion">
-                        <label class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Fecha
-                            de Aplicación</label>
-                        <input id="fecha-aplicacion" name="fecha_aplicacion"
-                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
-                            type="date" />
-                        <p class="field-error-msg"><span class="material-symbols-outlined"
-                                style="font-size:14px">error</span>Este campo es obligatorio</p>
-                    </div>
-                    <div class="space-y-2" data-field="numero-contacto">
-                        <label
-                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Número
-                            de contacto</label>
-                        <input id="numero-contacto" name="numero_contacto"
-                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
-                            placeholder="+54 9 11 0000-0000" type="tel" />
-                        <p class="field-error-msg"><span class="material-symbols-outlined"
-                                style="font-size:14px">error</span>Este campo es obligatorio</p>
-                    </div>
+                    <h1 class="font-inter text-on-surface dark:text-white font-bold tracking-tight text-lg">Solicitud de
+                        Aplicación</h1>
+                </div>
+                <button
+                    class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    onclick="toggleHelpSheet(true)">
+                    <span class="material-symbols-outlined text-gray-500">help</span>
+                </button>
+            </header>
+            <!-- Progress Bar -->
+            <div class="flex gap-2 px-2">
+                <div class="h-1.5 flex-1 rounded-full bg-primary-container transition-all duration-500" id="progress-1">
+                </div>
+                <div class="h-1.5 flex-1 rounded-full bg-surface-container-high transition-all duration-500"
+                    id="progress-2"></div>
+                <div class="h-1.5 flex-1 rounded-full bg-surface-container-high transition-all duration-500"
+                    id="progress-3"></div>
+                <div class="h-1.5 flex-1 rounded-full bg-surface-container-high transition-all duration-500"
+                    id="progress-4"></div>
+            </div>
+        </div>
+    </div>
+    <main class="pt-[140px] px-4 max-w-xl mx-auto">
+        <!-- Step 1: Datos de Negocio -->
+        <section class="space-y-6" id="step-1">
+            <div class="space-y-1">
+                <h2 class="text-2xl font-black text-on-surface tracking-tight">Datos de Negocio</h2>
+            </div>
+            <div class="space-y-4">
+                <div class="space-y-2" data-field="nombre-empresa">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Nombre y
+                        Apellido / Empresa</label>
+                    <input id="nombre-empresa"
+                        class="w-full h-14 px-6 bg-surface-container-lowest border-none rounded-full ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container transition-all shadow-sm"
+                        placeholder="Ej: AgroIndustrias S.A." type="text" />
+                </div>
+                <div class="space-y-2" data-field="fecha-aplicacion">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Fecha de
+                        Aplicación</label>
+                    <input id="fecha-aplicacion"
+                        class="w-full h-14 px-6 bg-surface-container-lowest border-none rounded-full ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container transition-all shadow-sm cursor-pointer"
+                        type="date" onclick="this.showPicker()" />
+                </div>
+                <div class="space-y-2" data-field="numero-contacto">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Número de
+                        contacto</label>
+                    <input id="numero-contacto"
+                        class="w-full h-14 px-6 bg-surface-container-lowest border-none rounded-full ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container transition-all shadow-sm"
+                        placeholder="+54 9 11 ..." type="tel" />
                 </div>
             </div>
-            <!-- Bloque 2: Lote y Entorno -->
-            <div class="bg-surface-container-low rounded-lg p-8 md:p-10">
-                <div class="flex items-center gap-3 mb-8">
-                    <div
-                        class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
-                        <span class="material-symbols-outlined">map</span>
-                    </div>
-                    <h2 class="text-2xl font-bold tracking-tight">Lote y Entorno</h2>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                    <div class="space-y-2 col-span-1 md:col-span-1" data-field="lote-location-input">
-                        <label
-                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Ubicación
-                            del Lote</label>
-                        <div class="relative location-trigger" id="ubicacion-lote-trigger" style="cursor: pointer;">
-                            <span
-                                class="material-symbols-outlined absolute left-5 top-4 text-on-surface-variant">location_on</span>
-                            <input id="lote-location-input" name="lote_location" readonly
-                                class="w-full bg-surface-container-lowest border-none rounded-full pl-12 pr-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm cursor-pointer"
-                                placeholder="Seleccionar en mapa..." type="text" />
-                            <input id="lote-lat-input" type="hidden" name="lat" />
-                            <input id="lote-lng-input" type="hidden" name="lng" />
-                        </div>
-                        <p class="field-error-msg"><span class="material-symbols-outlined"
-                                style="font-size:14px">error</span>Seleccioná una ubicación en el mapa</p>
-                    </div>
-                    <div class="space-y-2" data-field="hectareas">
-                        <label
-                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Hectáreas</label>
-                        <input id="hectareas" name="hectareas"
-                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
-                            placeholder="0" type="number" />
-                        <p class="field-error-msg"><span class="material-symbols-outlined"
-                                style="font-size:14px">error</span>Este campo es obligatorio</p>
-                    </div>
+        </section>
+        <!-- Step 2: Lote y Entorno -->
+        <section class="step-hidden space-y-6" id="step-2">
+            <div class="space-y-1">
+                <h2 class="text-2xl font-black text-on-surface tracking-tight">Lote y Entorno</h2>
+            </div>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-2" data-field="cultivo-select">
                         <label
-                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Cultivo</label>
-                        <select id="cultivo-select" name="cultivo"
-                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm appearance-none">
-                            <option value="">Seleccionar cultivo</option>
+                            class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Cultivo</label>
+                        <select id="cultivo-select"
+                            class="w-full h-14 px-6 bg-surface-container-lowest border-none rounded-full ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container shadow-sm appearance-none">
+                            <option value="" disabled selected>Seleccionar cultivo</option>
                             <option value="Soja">Soja</option>
                             <option value="Maíz">Maíz</option>
                             <option value="Trigo">Trigo</option>
@@ -303,457 +359,559 @@
                             <option value="Vicia">Vicia</option>
                             <option value="Otro">Otro</option>
                         </select>
-                        <p class="field-error-msg"><span class="material-symbols-outlined"
-                                style="font-size:14px">error</span>Seleccioná un cultivo</p>
                     </div>
-                    <div id="otro-cultivo-container" class="space-y-2 hidden col-span-1 md:col-span-3"
-                        data-field="otro-cultivo-input">
+                    <div class="space-y-2" data-field="hectareas-input">
                         <label
-                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Especifique
-                            otro cultivo</label>
-                        <input id="otro-cultivo-input" name="otro_cultivo"
-                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
-                            placeholder="Por favor, especifique..." type="text" />
-                        <p class="field-error-msg"><span class="material-symbols-outlined"
-                                style="font-size:14px">error</span>Este campo es obligatorio</p>
+                            class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Hectáreas</label>
+                        <input id="hectareas-input"
+                            class="w-full h-14 px-6 bg-surface-container-lowest border-none rounded-full ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container shadow-sm appearance-none"
+                            placeholder="0" type="number" min="0" step="1"
+                            onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                     </div>
                 </div>
-                <div class="space-y-4">
+                <div id="otro-cultivo-container" class="space-y-2 hidden mt-4" data-field="otro-cultivo-input">
                     <label
-                        class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Obstáculos
-                        en el lote</label>
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                        <label
-                            class="group flex flex-col items-center justify-center p-4 bg-surface-container-lowest rounded-xl cursor-pointer hover:bg-primary-container/10 border-2 border-transparent transition-all relative">
-                            <input id="obs-casco" name="obstaculos[]" value="Casco urbano" class="hidden peer"
-                                type="checkbox" />
-                            <span
-                                class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary transition-colors">location_city</span>
-                            <span class="text-xs font-medium text-center">Casco urbano</span>
+                        class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Especifique
+                        otro cultivo</label>
+                    <input id="otro-cultivo-input" type="text"
+                        class="w-full h-14 px-6 bg-surface-container-lowest border-none rounded-full ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container shadow-sm"
+                        placeholder="Por favor, especifique..." />
+                </div>
+                <div class="space-y-2" data-field="lote-location-input">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Ubicación
+                        del Lote</label>
+                    <div class="relative location-trigger" id="ubicacion-lote-trigger" style="cursor: pointer;">
+                        <span
+                            class="material-symbols-outlined absolute left-5 top-4 text-on-surface-variant">location_on</span>
+                        <input id="lote-location-input" name="lote_location" readonly
+                            class="w-full h-14 pl-12 pr-6 bg-surface-container-lowest border-none rounded-full ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container shadow-sm cursor-pointer"
+                            placeholder="Seleccionar en mapa..." type="text" />
+                        <input id="lote-lat-input" type="hidden" name="lat" />
+                        <input id="lote-lng-input" type="hidden" name="lng" />
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <label
+                        class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Obstáculos</label>
+                    <div class="flex flex-wrap gap-2">
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="obstaculos" value="Casco urbano" class="peer hidden">
                             <div
-                                class="absolute inset-0 border-2 border-primary-container rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+                                class="px-5 py-2 rounded-full border border-outline-variant text-sm font-medium text-on-surface-variant hover:bg-[#47C278]/10 transition-all peer-checked:bg-[#47C278] peer-checked:text-white peer-checked:border-[#47C278] select-none">
+                                Casco urbano
                             </div>
                         </label>
-                        <label
-                            class="group flex flex-col items-center justify-center p-4 bg-surface-container-lowest rounded-xl cursor-pointer hover:bg-primary-container/10 border-2 border-transparent transition-all relative">
-                            <input id="obs-electrico" name="obstaculos[]" value="Tendido electrico" class="hidden peer"
-                                type="checkbox" />
-                            <span
-                                class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary transition-colors">bolt</span>
-                            <span class="text-xs font-medium text-center">Tendido electrico</span>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="obstaculos" value="Tendido eléctrico" class="peer hidden">
                             <div
-                                class="absolute inset-0 border-2 border-primary-container rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+                                class="px-5 py-2 rounded-full border border-outline-variant text-sm font-medium text-on-surface-variant hover:bg-[#47C278]/10 transition-all peer-checked:bg-[#47C278] peer-checked:text-white peer-checked:border-[#47C278] select-none">
+                                Tendido eléctrico
                             </div>
                         </label>
-                        <label
-                            class="group flex flex-col items-center justify-center p-4 bg-surface-container-lowest rounded-xl cursor-pointer hover:bg-primary-container/10 border-2 border-transparent transition-all relative">
-                            <input id="obs-monte" name="obstaculos[]" value="Monte" class="hidden peer"
-                                type="checkbox" />
-                            <span
-                                class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary transition-colors">forest</span>
-                            <span class="text-xs font-medium text-center">Monte</span>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="obstaculos" value="Monte" class="peer hidden">
                             <div
-                                class="absolute inset-0 border-2 border-primary-container rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+                                class="px-5 py-2 rounded-full border border-outline-variant text-sm font-medium text-on-surface-variant hover:bg-[#47C278]/10 transition-all peer-checked:bg-[#47C278] peer-checked:text-white peer-checked:border-[#47C278] select-none">
+                                Monte
                             </div>
                         </label>
-                        <label
-                            class="group flex flex-col items-center justify-center p-4 bg-surface-container-lowest rounded-xl cursor-pointer hover:bg-primary-container/10 border-2 border-transparent transition-all relative">
-                            <input id="obs-molinos" name="obstaculos[]" value="Molinos" class="hidden peer"
-                                type="checkbox" />
-                            <span
-                                class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary transition-colors">wind_power</span>
-                            <span class="text-xs font-medium text-center">Molinos</span>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="obstaculos" value="Molinos" class="peer hidden">
                             <div
-                                class="absolute inset-0 border-2 border-primary-container rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+                                class="px-5 py-2 rounded-full border border-outline-variant text-sm font-medium text-on-surface-variant hover:bg-[#47C278]/10 transition-all peer-checked:bg-[#47C278] peer-checked:text-white peer-checked:border-[#47C278] select-none">
+                                Molinos
                             </div>
                         </label>
-                        <label
-                            class="group flex flex-col items-center justify-center p-4 bg-surface-container-lowest rounded-xl cursor-pointer hover:bg-primary-container/10 border-2 border-transparent transition-all relative">
-                            <input id="obs-laguna" name="obstaculos[]" value="Laguna/Arroyo" class="hidden peer"
-                                type="checkbox" />
-                            <span
-                                class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary transition-colors">water</span>
-                            <span class="text-xs font-medium text-center">Laguna/Arroyo</span>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="obstaculos" value="Laguna/Arroyo" class="peer hidden">
                             <div
-                                class="absolute inset-0 border-2 border-primary-container rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+                                class="px-5 py-2 rounded-full border border-outline-variant text-sm font-medium text-on-surface-variant hover:bg-[#47C278]/10 transition-all peer-checked:bg-[#47C278] peer-checked:text-white peer-checked:border-[#47C278] select-none">
+                                Laguna/Arroyo
                             </div>
                         </label>
-                        <label
-                            class="group flex flex-col items-center justify-center p-4 bg-surface-container-lowest rounded-xl cursor-pointer hover:bg-primary-container/10 border-2 border-transparent transition-all relative">
-                            <input id="obs-otros" name="obstaculos[]" value="Otros" class="hidden peer"
-                                type="checkbox" />
-                            <span
-                                class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary transition-colors">more_horiz</span>
-                            <span class="text-xs font-medium text-center">Otros</span>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" id="obs-otros" name="obstaculos" value="Otros" class="peer hidden">
                             <div
-                                class="absolute inset-0 border-2 border-primary-container rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+                                class="px-5 py-2 rounded-full border border-outline-variant text-sm font-medium text-on-surface-variant hover:bg-[#47C278]/10 transition-all peer-checked:bg-[#47C278] peer-checked:text-white peer-checked:border-[#47C278] select-none">
+                                Otros
                             </div>
                         </label>
+                    </div>
+                    <div id="otros-obstaculos-container" class="space-y-2 hidden mt-4">
+                        <label
+                            class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Especifique
+                            otros obstáculos</label>
+                        <input id="otros-obstaculos-input" type="text"
+                            class="w-full h-14 px-6 bg-surface-container-lowest border-none rounded-full ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container shadow-sm"
+                            placeholder="Por favor, especifique..." />
                     </div>
                 </div>
             </div>
-            <!-- Bloque 3: Receta de Siembra -->
-            <div class="bg-surface-container-low rounded-lg p-8 md:p-10">
-                <div class="flex items-center gap-3 mb-8">
-                    <div
-                        class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
-                        <span class="material-symbols-outlined">agriculture</span>
-                    </div>
-                    <h2 class="text-2xl font-bold tracking-tight">Receta de Siembra</h2>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="space-y-2" data-field="especie-siembra">
-                        <label
-                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Especie
-                            a sembrar</label>
-                        <input id="especie-siembra" name="especie_siembra"
-                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
-                            placeholder="Eje: Ryegrass" type="text" />
-                        <p class="field-error-msg"><span class="material-symbols-outlined"
-                                style="font-size:14px">error</span>Este campo es obligatorio</p>
-                    </div>
-                    <div class="space-y-2" data-field="kg-ha">
-                        <label
-                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Kg/Ha</label>
-                        <input id="kg-ha" name="kg_ha"
-                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm"
-                            placeholder="0" type="number" />
-                        <p class="field-error-msg"><span class="material-symbols-outlined"
-                                style="font-size:14px">error</span>Este campo es obligatorio</p>
-                    </div>
-                    <div class="space-y-2" data-field="presentacion-semilla">
-                        <label
-                            class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Presentación</label>
-                        <select id="presentacion-semilla" name="presentacion"
-                            class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 focus:ring-2 focus:ring-primary-container h-14 shadow-sm appearance-none">
-                            <option value="">Seleccionar presentación</option>
-                            <option value="Granel">Granel</option>
-                            <option value="Bolsa">Bolsa</option>
-                            <option value="Big Bag">Big Bag</option>
-                            <option value="Bidon">Bidon</option>
-                        </select>
-                        <p class="field-error-msg"><span class="material-symbols-outlined"
-                                style="font-size:14px">error</span>Seleccioná una presentación</p>
-                    </div>
-                </div>
+        </section>
+        <!-- Step 3: Tipo de Aplicación -->
+        <section class="step-hidden space-y-6" id="step-3">
+            <div class="space-y-1">
+                <h2 class="text-2xl font-black text-on-surface tracking-tight">Tipo de Aplicación</h2>
             </div>
-            <!-- Action Area -->
-            <div class="flex flex-col items-end gap-3 pt-8">
-                <button id="submit-btn"
-                    class="bg-primary-container text-on-primary-container font-bold text-lg px-12 py-5 rounded-full shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center gap-2 group"
-                    type="submit">
-                    Enviar Solicitud
-                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">send</span>
-                </button>
-                <p id="form-validation-msg" class="hidden items-center gap-1 text-sm font-medium text-error">
-                    <span class="material-symbols-outlined" style="font-size:18px;color:#ba1a1a">error</span>
-                    Completá los campos obligatorios antes de enviar.
-                </p>
-            </div>
-        </form>
-
-        <!-- Map Modal -->
-        <div class="hidden fixed inset-0 z-[100] flex items-center justify-center md:p-4" id="map-modal">
-            <div class="absolute inset-0 bg-on-surface/40 backdrop-blur-sm" id="map-backdrop"></div>
-            <div
-                class="bg-surface relative w-full h-full md:h-auto md:w-[80vw] lg:w-[60vw] md:min-h-[520px] md:max-h-[90vh] md:rounded-[2rem] shadow-2xl overflow-hidden flex flex-col">
-                <!-- Header -->
-                <div class="flex-none flex justify-between items-center p-4 md:p-6 border-b border-surface-container">
-                    <h3 class="text-xl md:text-2xl font-black text-on-surface tracking-tight">Ubicar Lote</h3>
-                    <button type="button" class="text-on-surface-variant hover:text-error transition-colors"
-                        id="map-close-btn">
-                        <span class="material-symbols-outlined text-3xl">close</span>
-                    </button>
-                </div>
-                <!-- Banner Instruction (cambia según el paso) -->
-                <div
-                    class="flex-none bg-primary-container/20 px-4 md:px-6 py-3 border-b border-primary-container/30 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary-container">info</span>
-                    <p class="text-xs md:text-sm font-semibold text-on-surface" id="map-banner-text">Ingresá la
-                        localidad más cercana a tu lote y hacé clic en Buscar.</p>
-                </div>
-                <!-- Controls and Map area (scrolleable) -->
-                <div class="flex-grow flex flex-col p-4 md:p-6 gap-3 md:gap-4 min-h-0 overflow-y-auto">
-                    <!-- Search bar -->
-                    <div class="flex-none flex flex-col sm:flex-row gap-2 w-full">
-                        <div class="relative flex-grow min-w-0">
-                            <input id="map-search-input"
-                                class="w-full bg-surface-container-lowest border border-outline-variant rounded-full px-6 py-3 focus:ring-2 focus:ring-primary-container focus:outline-none"
-                                placeholder="Ingresar localidad..." type="text" />
-                            <div id="search-suggestions"
-                                class="absolute z-[1001] left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl hidden max-h-60 overflow-y-auto">
-                            </div>
+            <div class="space-y-4">
+                <!-- Pulverización — activa -->
+                <div class="group relative overflow-hidden bg-surface-container-lowest p-4 rounded-lg border-2 border-transparent cursor-pointer flex items-center justify-between"
+                    onclick="selectTipoAplicacion('Pulverización'); goToStep(4)">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-12 h-12 bg-primary-container/20 rounded-2xl flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-primary text-3xl"
+                                style="font-variation-settings: 'FILL' 1;">water_drop</span>
                         </div>
-                        <button id="map-search-btn" type="button"
-                            class="bg-surface-container-high text-on-surface font-bold px-6 py-3 rounded-full hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
-                            <span class="material-symbols-outlined">search</span> Buscar
-                        </button>
-                    </div>
-                    <!-- Map Wrapper (oculto hasta buscar) -->
-                    <div id="map-wrapper"
-                        class="hidden w-full flex-grow min-h-[260px] relative z-10 rounded-xl md:rounded-2xl overflow-hidden bg-surface-container border border-outline-variant">
-                        <!-- Helper Flotante -->
-                        <div id="map-click-helper"
-                            class="absolute top-6 left-1/2 -translate-x-1/2 z-[1000] bg-primary-container text-on-primary-container font-black px-6 py-3 rounded-full shadow-lg flex items-center justify-center gap-2 pointer-events-none transition-opacity duration-300">
-                            <span class="material-symbols-outlined animate-bounce">touch_app</span>
-                            <span class="text-sm">Buscá tu lote y hacé clic para marcarlo</span>
-                        </div>
-                        <div id="map-container" class="absolute inset-0 w-full h-full">
+                        <div>
+                            <h3 class="text-lg font-bold">Pulverización</h3>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Líquidos
+                            </p>
                         </div>
                     </div>
+                    <span
+                        class="px-3 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-full shrink-0">Activo</span>
                 </div>
-                <!-- Confirm Button — siempre visible, anclado al pie del modal -->
-                <div class="flex-none border-t border-surface-container p-4 md:p-6 flex justify-center">
-                    <button type="button" id="map-confirm-btn"
-                        class="bg-[#47C278] text-white font-bold text-lg px-8 py-3 md:py-4 rounded-full shadow-md hover:shadow-lg transition-all w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed">
-                        Confirmar Ubicación
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Success Modal -->
-        <div class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4" id="success-modal">
-            <div class="absolute inset-0 bg-on-surface/40 backdrop-blur-sm"></div>
-            <div
-                class="bg-surface relative w-full max-w-lg rounded-[2.5rem] shadow-2xl p-10 text-center flex flex-col items-center">
-                <div
-                    class="w-20 h-20 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center mb-6">
-                    <span class="material-symbols-outlined text-5xl"
-                        style="font-variation-settings: 'FILL' 1;">check_circle</span>
-                </div>
-                <h3 class="text-3xl font-black text-on-surface mb-4 tracking-tight">¡Solicitud enviada con éxito!</h3>
-                <p class="text-on-surface-variant mb-10 leading-relaxed text-lg">
-                    Hemos recibido tu receta técnica de siembra. Un coordinador de Vistaguay revisará los datos y se
-                    comunicará con vos a la brevedad para finalizar la gestión de tu vuelo.
-                </p>
-                <button
-                    class="bg-[#47C278] text-white font-bold text-lg px-12 py-5 rounded-full shadow-md hover:shadow-lg transition-all w-full active:scale-95"
-                    id="modal-confirm-btn" type="button">
-                    Entendido
-                </button>
-            </div>
-        </div>
-
-    </main>
-    <!-- Success View: Próximamente -->
-    <main class="hidden flex-grow pt-16 flex flex-col items-center justify-center relative overflow-hidden bg-white"
-        id="proximamente-view">
-        <!-- Subtle Background Texture -->
-        <div class="absolute inset-0 z-0 opacity-40 pointer-events-none">
-            <div
-                class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary-container/20 blur-[100px]">
-            </div>
-            <div
-                class="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] rounded-full bg-secondary-container/30 blur-[80px]">
-            </div>
-        </div>
-        <section class="relative z-10 w-full max-w-3xl px-8 py-12 flex flex-col items-center text-center">
-            <!-- Icon/Visual Anchor -->
-            <div
-                class="mb-8 p-6 bg-surface-container-lowest rounded-xl shadow-[0_32px_64px_-16px_rgba(25,28,30,0.04)] inline-flex items-center justify-center">
-                <span class="material-symbols-outlined text-primary-container text-6xl"
-                    style="font-variation-settings: 'wght' 200;">precision_manufacturing</span>
-            </div>
-            <!-- Content -->
-            <h1 class="text-on-surface text-5xl md:text-6xl font-extrabold tracking-tighter mb-6">
-                Próximamente
-            </h1>
-            <p class="text-on-surface-variant text-lg md:text-xl leading-relaxed mb-10 max-w-xl mx-auto">
-                Estamos integrando más servicios dentro de la plataforma. Para una gestión completa de tus vuelos,
-                descárgate la App de Vistaguay.
-            </p>
-            <button
-                class="bg-primary-container text-on-primary-container font-bold px-10 py-4 rounded-full text-lg shadow-lg shadow-primary-container/20 active:scale-95 transition-all hover:brightness-105">
-                <a href="https://onelink.to/6g4qbv" target="_blank" rel="noopener noreferrer">Descargar App</a>
-            </button>
-            <!-- Support Section -->
-            <div class="mt-10 pt-6 w-full">
-                <!-- Visual Divider -->
-                <div class="w-full h-px bg-gradient-to-r from-transparent via-outline-variant/30 to-transparent mb-12">
-                </div>
-                <div
-                    class="bg-surface-container-low rounded-lg p-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                    <div class="text-left">
-                        <h2 class="text-on-surface text-2xl font-bold mb-2">¿Necesitás más información?</h2>
-                        <p class="text-on-surface-variant">Comunicate con nuestro equipo de soporte.</p>
+                <!-- Siembra — activa -->
+                <div class="group relative overflow-hidden bg-surface-container-lowest p-4 rounded-lg border-2 border-transparent cursor-pointer flex items-center justify-between"
+                    onclick="selectTipoAplicacion('Siembra'); goToStep(4)">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-12 h-12 bg-primary-container/20 rounded-2xl flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-primary text-3xl"
+                                style="font-variation-settings: 'FILL' 1;">agriculture</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold">Siembra</h3>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Sólidos
+                            </p>
+                        </div>
                     </div>
-                    <button
-                        class="bg-white border-2 border-outline-variant hover:border-primary-container hover:text-primary transition-colors text-on-surface-variant font-semibold px-8 py-3 rounded-full active:scale-95">
-                        <a href="https://api.whatsapp.com/send?phone=5493516887507" target="_blank"
-                            rel="noopener noreferrer">Contactar a Soporte</a>
-                    </button>
+                    <span
+                        class="px-3 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-full shrink-0">Activo</span>
+                </div>
+                <!-- Fertilización — bloqueada -->
+                <div
+                    class="opacity-50 grayscale cursor-not-allowed bg-surface-container-low p-4 rounded-lg border-2 border-transparent flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-2xl flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-gray-500 text-3xl">science</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold">Fertilización</h3>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Sólidos /
+                                Líquidos</p>
+                        </div>
+                    </div>
+                    <span
+                        class="px-3 py-1 bg-gray-400 text-white text-[10px] font-bold uppercase tracking-widest rounded-full shrink-0">Próximamente</span>
+                </div>
+                <!-- Control de insectos — bloqueada -->
+                <div
+                    class="opacity-50 grayscale cursor-not-allowed bg-surface-container-low p-4 rounded-lg border-2 border-transparent flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-2xl flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-gray-500 text-3xl">pest_control</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold">Control de insectos</h3>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Sólidos /
+                                Cebos</p>
+                        </div>
+                    </div>
+                    <span
+                        class="px-3 py-1 bg-gray-400 text-white text-[10px] font-bold uppercase tracking-widest rounded-full shrink-0">Próximamente</span>
+                </div>
+            </div>
+        </section>
+        <!-- Step 4: Receta de Aplicación -->
+        <section class="step-hidden space-y-6" id="step-4">
+            <div class="space-y-1">
+                <h2 class="text-2xl font-black text-on-surface tracking-tight" id="step-4-title">Receta de Pulverización
+                </h2>
+            </div>
+
+            <div class="space-y-5" id="form-pulverización">
+
+                <!-- Tipo de Pulverización -->
+                <div class="space-y-3" data-field="tipo-pulverizacion">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Tipo de
+                        Pulverización</label>
+                    <div class="segmented-btn-group flex bg-surface-container-high rounded-full p-1 gap-1">
+                        <button type="button"
+                            class="tipo-pulv-btn flex-1 py-2.5 rounded-full text-sm font-semibold text-on-surface transition-all bg-white shadow-sm"
+                            data-value="Cobertura total" onclick="selectTipoPulverizacion(this)">Cobertura
+                            total</button>
+                        <button type="button"
+                            class="tipo-pulv-btn flex-1 py-2.5 rounded-full text-sm font-semibold text-on-surface-variant transition-all"
+                            data-value="Sectorizada" onclick="selectTipoPulverizacion(this)">Sectorizada</button>
+                    </div>
+                    <input type="hidden" id="tipo-pulverizacion" value="Cobertura total" />
+                </div>
+
+                <!-- Prescripción (Aparece si es Sectorizada) -->
+                <div id="prescripcion-container" class="bg-surface-container-low rounded-2xl p-5 space-y-4 hidden"
+                    data-field="prescripcion">
+                    <div class="flex items-center justify-between gap-4">
+                        <label class="text-sm font-semibold text-on-surface">¿Contás con la prescripción?</label>
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                            <input type="checkbox" id="prescripcion-switch" class="sr-only peer" checked
+                                onchange="togglePrescripcion(this.checked)">
+                            <div
+                                class="w-11 h-6 bg-surface-container-high rounded-full transition-colors duration-300 peer-checked:bg-[#47C278] after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:border-gray-200 after:rounded-full after:h-5 after:w-5 after:transition-all after:duration-300 peer-checked:after:translate-x-full peer-checked:after:border-white">
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="resto-pulverizacion" class="space-y-5">
+
+                    <!-- Tipo de tratamiento (multiselect chips) -->
+                    <div class="space-y-3" data-field="tipo-tratamiento">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Tipo
+                            de tratamiento</label>
+                        <div class="flex flex-wrap gap-2">
+                            <label class="cursor-pointer">
+                                <input type="checkbox" name="tipo-tratamiento" value="Herbicida" class="peer hidden">
+                                <div
+                                    class="px-5 py-2 rounded-full border border-outline-variant text-sm font-medium text-on-surface-variant hover:bg-[#47C278]/10 transition-all peer-checked:bg-[#47C278] peer-checked:text-white peer-checked:border-[#47C278] select-none">
+                                    Herbicida</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="checkbox" name="tipo-tratamiento" value="Insecticida" class="peer hidden">
+                                <div
+                                    class="px-5 py-2 rounded-full border border-outline-variant text-sm font-medium text-on-surface-variant hover:bg-[#47C278]/10 transition-all peer-checked:bg-[#47C278] peer-checked:text-white peer-checked:border-[#47C278] select-none">
+                                    Insecticida</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="checkbox" name="tipo-tratamiento" value="Fungicida" class="peer hidden">
+                                <div
+                                    class="px-5 py-2 rounded-full border border-outline-variant text-sm font-medium text-on-surface-variant hover:bg-[#47C278]/10 transition-all peer-checked:bg-[#47C278] peer-checked:text-white peer-checked:border-[#47C278] select-none">
+                                    Fungicida</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="checkbox" name="tipo-tratamiento" value="Desecante" class="peer hidden">
+                                <div
+                                    class="px-5 py-2 rounded-full border border-outline-variant text-sm font-medium text-on-surface-variant hover:bg-[#47C278]/10 transition-all peer-checked:bg-[#47C278] peer-checked:text-white peer-checked:border-[#47C278] select-none">
+                                    Desecante</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Momento de Aplicación (segmented button) -->
+                    <div class="space-y-3" data-field="momento-aplicacion">
+                        <label
+                            class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Momento
+                            de Aplicación</label>
+                        <div class="segmented-btn-group flex bg-surface-container-high rounded-full p-1 gap-1">
+                            <button type="button"
+                                class="momento-btn flex-1 py-2.5 rounded-full text-sm font-semibold text-on-surface-variant transition-all"
+                                data-value="Pre-emergente" onclick="selectMomento(this)">Pre-emergente</button>
+                            <button type="button"
+                                class="momento-btn flex-1 py-2.5 rounded-full text-sm font-semibold text-on-surface-variant transition-all"
+                                data-value="Post-emergente" onclick="selectMomento(this)">Post-emergente</button>
+                            <button type="button"
+                                class="momento-btn flex-1 py-2.5 rounded-full text-sm font-semibold text-on-surface transition-all bg-white shadow-sm"
+                                data-value="Pre-siembra" onclick="selectMomento(this)">Pre-siembra</button>
+                        </div>
+                        <input type="hidden" id="momento-aplicacion" value="Pre-siembra" />
+                    </div>
+
+                    <!-- Cantidad de productos a aplicar -->
+                    <div class="space-y-2" data-field="cantidad-productos">
+                        <label
+                            class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Cantidad
+                            de productos a aplicar</label>
+                        <input id="cantidad-productos"
+                            class="w-full h-14 px-6 bg-surface-container-lowest border-none rounded-full ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container shadow-sm"
+                            placeholder="Ej: 3" type="number" min="1" />
+                    </div>
+
+                    <!-- Switches: Disponibilidad de agua + Provee corrector/coadyuvante -->
+                    <div class="bg-surface-container-low rounded-2xl p-5 space-y-4">
+                        <div class="flex items-center justify-between gap-4">
+                            <span class="text-sm font-semibold text-on-surface">Disponibilidad de agua</span>
+                            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input type="checkbox" id="disponibilidad-agua" class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-surface-container-high rounded-full transition-colors duration-300 peer-checked:bg-[#47C278] after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:border-gray-200 after:rounded-full after:h-5 after:w-5 after:transition-all after:duration-300 peer-checked:after:translate-x-full peer-checked:after:border-white">
+                                </div>
+                            </label>
+                        </div>
+                        <div class="h-px bg-outline-variant/20"></div>
+                        <div class="flex items-center justify-between gap-4">
+                            <span class="text-sm font-semibold text-on-surface">Provee corrector / coadyuvante?</span>
+                            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input type="checkbox" id="provee-corrector" class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-surface-container-high rounded-full transition-colors duration-300 peer-checked:bg-[#47C278] after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:border-gray-200 after:rounded-full after:h-5 after:w-5 after:transition-all after:duration-300 peer-checked:after:translate-x-full peer-checked:after:border-white">
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Cultivos vecinos sensibles (switch + conditional select) -->
+                    <div class="bg-surface-container-low rounded-2xl p-5 space-y-4">
+                        <div class="flex items-center justify-between gap-4">
+                            <label class="text-sm font-semibold text-on-surface">¿Cultivos vecinos sensibles?</label>
+                            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input type="checkbox" id="cultivos-vecinos-switch" class="sr-only peer"
+                                    onchange="toggleCultivosVecinos(this.checked)">
+                                <div
+                                    class="w-11 h-6 bg-surface-container-high rounded-full transition-colors duration-300 peer-checked:bg-[#47C278] after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:border-gray-200 after:rounded-full after:h-5 after:w-5 after:transition-all after:duration-300 peer-checked:after:translate-x-full peer-checked:after:border-white">
+                                </div>
+                            </label>
+                        </div>
+                        <div id="cultivos-vecinos-select-container" class="hidden space-y-4 pt-4 border-t border-outline-variant/20 mt-4" data-field="cultivos-vecinos-select">
+                            <label class="text-sm font-semibold text-on-surface">Seleccionar orientación de linderos</label>
+                            
+                            <div class="grid grid-cols-4 gap-2">
+                                <button type="button" onclick="toggleOrientacion('norte')" id="btn-origen-norte" data-active="false" class="flex flex-col items-center py-3 rounded-lg border-2 border-outline-variant/30 text-on-surface-variant transition-all hover:bg-surface-container-high">
+                                    <span class="material-symbols-outlined text-xl mb-1">arrow_upward</span>
+                                    <span class="text-xs font-bold uppercase">Norte</span>
+                                </button>
+                                <button type="button" onclick="toggleOrientacion('sur')" id="btn-origen-sur" data-active="false" class="flex flex-col items-center py-3 rounded-lg border-2 border-outline-variant/30 text-on-surface-variant transition-all hover:bg-surface-container-high">
+                                    <span class="material-symbols-outlined text-xl mb-1">arrow_downward</span>
+                                    <span class="text-xs font-bold uppercase">Sur</span>
+                                </button>
+                                <button type="button" onclick="toggleOrientacion('este')" id="btn-origen-este" data-active="false" class="flex flex-col items-center py-3 rounded-lg border-2 border-outline-variant/30 text-on-surface-variant transition-all hover:bg-surface-container-high">
+                                    <span class="material-symbols-outlined text-xl mb-1">arrow_forward</span>
+                                    <span class="text-xs font-bold uppercase">Este</span>
+                                </button>
+                                <button type="button" onclick="toggleOrientacion('oeste')" id="btn-origen-oeste" data-active="false" class="flex flex-col items-center py-3 rounded-lg border-2 border-outline-variant/30 text-on-surface-variant transition-all hover:bg-surface-container-high">
+                                    <span class="material-symbols-outlined text-xl mb-1">arrow_back</span>
+                                    <span class="text-xs font-bold uppercase">Oeste</span>
+                                </button>
+                            </div>
+
+                            <div id="cultivos-orientacion-wrapper" class="hidden space-y-3 pt-2">
+                                <label class="text-sm font-semibold text-on-surface-variant">Definir cultivo por orientación</label>
+                                <div class="grid grid-cols-2 gap-3" id="orientacion-selects">
+                                    <div id="wrap-origen-norte" class="hidden space-y-1" data-field="cultivos-norte">
+                                        <label class="text-xs font-bold flex items-center gap-1 text-on-surface"><span class="material-symbols-outlined text-[14px]">arrow_upward</span> Norte</label>
+                                        <select id="cultivos-norte" class="w-full h-12 px-4 bg-surface-container-lowest border-none rounded-xl ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container shadow-sm appearance-none text-sm"></select>
+                                    </div>
+                                    <div id="wrap-origen-sur" class="hidden space-y-1" data-field="cultivos-sur">
+                                        <label class="text-xs font-bold flex items-center gap-1 text-on-surface"><span class="material-symbols-outlined text-[14px]">arrow_downward</span> Sur</label>
+                                        <select id="cultivos-sur" class="w-full h-12 px-4 bg-surface-container-lowest border-none rounded-xl ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container shadow-sm appearance-none text-sm"></select>
+                                    </div>
+                                    <div id="wrap-origen-este" class="hidden space-y-1" data-field="cultivos-este">
+                                        <label class="text-xs font-bold flex items-center gap-1 text-on-surface"><span class="material-symbols-outlined text-[14px]">arrow_forward</span> Este</label>
+                                        <select id="cultivos-este" class="w-full h-12 px-4 bg-surface-container-lowest border-none rounded-xl ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container shadow-sm appearance-none text-sm"></select>
+                                    </div>
+                                    <div id="wrap-origen-oeste" class="hidden space-y-1" data-field="cultivos-oeste">
+                                        <label class="text-xs font-bold flex items-center gap-1 text-on-surface"><span class="material-symbols-outlined text-[14px]">arrow_back</span> Oeste</label>
+                                        <select id="cultivos-oeste" class="w-full h-12 px-4 bg-surface-container-lowest border-none rounded-xl ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container shadow-sm appearance-none text-sm"></select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <select id="cultivos-base-options" class="hidden">
+                                <option value="" disabled selected>Seleccionar cultivo</option>
+                                <option value="Soja">Soja</option>
+                                <option value="Maíz">Maíz</option>
+                                <option value="Trigo">Trigo</option>
+                                <option value="Girasol">Girasol</option>
+                                <option value="Cebada">Cebada</option>
+                                <option value="Ajo">Ajo</option>
+                                <option value="Alfalfa">Alfalfa</option>
+                                <option value="Algodón">Algodón</option>
+                                <option value="Amaranto">Amaranto</option>
+                                <option value="Arroz">Arroz</option>
+                                <option value="Arveja">Arveja</option>
+                                <option value="Avena">Avena</option>
+                                <option value="Camelina">Camelina</option>
+                                <option value="Campo natural">Campo natural</option>
+                                <option value="Carinata">Carinata</option>
+                                <option value="Caña de azúcar">Caña de azúcar</option>
+                                <option value="Cebolla">Cebolla</option>
+                                <option value="Centeno">Centeno</option>
+                                <option value="Chía">Chía</option>
+                                <option value="Ciruela">Ciruela</option>
+                                <option value="Colza">Colza</option>
+                                <option value="Cártamo">Cártamo</option>
+                                <option value="Durazno">Durazno</option>
+                                <option value="Garbanzo">Garbanzo</option>
+                                <option value="Lentejas">Lentejas</option>
+                                <option value="Lino">Lino</option>
+                                <option value="Lotus corniculatus">Lotus corniculatus</option>
+                                <option value="Manzana">Manzana</option>
+                                <option value="Maní">Maní</option>
+                                <option value="Mijo">Mijo</option>
+                                <option value="Moha">Moha</option>
+                                <option value="Palta">Palta</option>
+                                <option value="Papa">Papa</option>
+                                <option value="Pera">Pera</option>
+                                <option value="Pistacho">Pistacho</option>
+                                <option value="Poroto mung">Poroto mung</option>
+                                <option value="Poroto negro">Poroto negro</option>
+                                <option value="Poroto rojo">Poroto rojo</option>
+                                <option value="Quinoa">Quinoa</option>
+                                <option value="Remolacha Azucarera">Remolacha Azucarera</option>
+                                <option value="Sorgo">Sorgo</option>
+                                <option value="Sésamo">Sésamo</option>
+                                <option value="Tomate">Tomate</option>
+                                <option value="Trigo Candeal">Trigo Candeal</option>
+                                <option value="Trigo Sarraceno">Trigo Sarraceno</option>
+                                <option value="Triticale">Triticale</option>
+                                <option value="Uva (pasas)">Uva (pasas)</option>
+                                <option value="Vicia">Vicia</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div> <!-- Fin resto-pulverizacion -->
+
+                <!-- Mensaje de Necesito Generarla -->
+                <div id="mensaje-necesito-generar"
+                    class="hidden p-5 bg-[#47C278]/20 text-on-surface rounded-2xl flex-col items-center gap-4 text-center">
+                    <span class="material-symbols-outlined text-4xl text-primary mb-2">info</span>
+                    <p class="text-sm font-medium">Como no contás con una prescripción es importante que la generes
+                        antes de solicitar tu pulverización. Ingresá a la App de Vistaguay para solicitarla y luego
+                        podrás solicitar tu pulverización.</p>
+                    <a href="https://onelink.to/6g4qbv" target="_blank"
+                        class="mt-4 px-6 py-3 w-full text-center rounded-full bg-primary text-white font-bold tracking-wide hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2">
+                        Ir a la App <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- Receta de Siembra -->
+            <div class="space-y-4 hidden" id="form-siembra">
+                <div class="space-y-2" data-field="especie-siembra">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Especie a
+                        \
+                        sembrar</label>
+                    <input id="especie-siembra"
+                        class="w-full h-14 px-6 bg-surface-container-lowest border-none rounded-full ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container shadow-sm"
+                        placeholder="Ej: Raygrass" type="text" />
+                </div>
+                <div class="space-y-2" data-field="kg-ha">
+                    <label
+                        class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Kg/Ha</label>
+                    <input id="kg-ha"
+                        class="w-full h-14 px-6 bg-surface-container-lowest border-none rounded-full ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container shadow-sm"
+                        placeholder="25.0" type="number" min="0" step="0.1" />
+                </div>
+                <div class="space-y-2" data-field="presentacion-semilla">
+                    <label
+                        class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant ml-4">Presentación
+                        \
+                        del producto</label>
+                    <select id="presentacion-semilla"
+                        class="w-full h-14 px-6 bg-surface-container-lowest border-none rounded-full ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary-container shadow-sm appearance-none">
+                        <option value="" disabled selected>Seleccionar presentación</option>
+                        <option value="Granel">Granel</option>
+                        <option value="Bolsa">Bolsa</option>
+                        <option value="Big Bag">Big Bag</option>
+                    </select>
                 </div>
             </div>
         </section>
     </main>
+    <!-- Fixed Bottom Nav Bar -->
+    <nav
+        class="fixed bottom-0 left-0 w-full z-50 px-6 pb-8 pt-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-t border-surface-container shadow-[0_-8px_24px_rgba(0,0,0,0.05)] rounded-t-2xl">
+        <div class="max-w-xl mx-auto flex gap-4" id="nav-container">
+            <!-- Navigation buttons will be updated by JS -->
+            <button
+                class="flex-1 h-14 border-2 border-outline-variant/30 text-secondary font-bold rounded-full active:scale-95 transition-transform"
+                id="btn-volver" onclick="prevStep()">
+                Volver
+            </button>
+            <button
+                class="flex-[1.5] h-14 bg-[#47C278] text-white font-bold rounded-full shadow-lg shadow-[#47C278]/20 active:scale-95 transition-transform"
+                id="btn-siguiente" onclick="nextStep()">
+                Siguiente
+            </button>
+        </div>
+    </nav>
+    <!-- Map Modal -->
+    <div class="hidden fixed inset-0 z-[100] flex items-center justify-center md:p-4" id="map-modal">
+        <div class="absolute inset-0 bg-on-surface/40 backdrop-blur-sm" id="map-backdrop"></div>
+        <div
+            class="bg-surface relative w-full h-full md:h-auto md:w-[80vw] lg:w-[60vw] md:min-h-[520px] md:max-h-[90vh] md:rounded-[2rem] shadow-2xl overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="flex-none flex justify-between items-center p-4 md:p-6 border-b border-surface-container">
+                <h3 class="text-xl md:text-2xl font-black text-on-surface tracking-tight">Ubicar Lote</h3>
+                <button type="button" class="text-on-surface-variant hover:text-error transition-colors"
+                    id="map-close-btn">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+            <!-- Banner Instruction -->
+            <div
+                class="flex-none bg-primary-container/20 px-4 md:px-6 py-3 border-b border-primary-container/30 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary-container">info</span>
+                <p class="text-xs md:text-sm font-semibold text-on-surface" id="map-banner-text">Ingresá la
+                    localidad más cercana a tu lote y hacé clic en Buscar.</p>
+            </div>
+            <!-- Controls and Map area -->
+            <div class="flex-grow flex flex-col p-4 md:p-6 gap-3 md:gap-4 min-h-0 overflow-y-auto">
+                <!-- Search bar -->
+                <div class="flex-none flex flex-col sm:flex-row gap-2 w-full">
+                    <div class="relative flex-grow min-w-0">
+                        <input id="map-search-input"
+                            class="w-full bg-surface-container-lowest border border-outline-variant rounded-full px-6 py-3 focus:ring-2 focus:ring-primary-container focus:outline-none"
+                            placeholder="Ingresar localidad..." type="text" />
+                        <div id="search-suggestions"
+                            class="absolute z-[1001] left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl hidden max-h-60 overflow-y-auto">
+                        </div>
+                    </div>
+                    <button id="map-search-btn" type="button"
+                        class="bg-surface-container-high text-on-surface font-bold px-6 py-3 rounded-full hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
+                        <span class="material-symbols-outlined">search</span> Buscar
+                    </button>
+                </div>
+                <!-- Map Wrapper -->
+                <div id="map-wrapper"
+                    class="hidden w-full flex-grow min-h-[260px] relative z-10 rounded-xl md:rounded-2xl overflow-hidden bg-surface-container border border-outline-variant">
+                    <!-- Helper Flotante -->
+                    <div id="map-click-helper"
+                        class="absolute top-6 left-1/2 -translate-x-1/2 z-[1000] bg-primary-container text-on-primary-container font-black px-6 py-3 rounded-full shadow-lg flex items-center justify-center gap-2 pointer-events-none transition-opacity duration-300">
+                        <span class="material-symbols-outlined animate-bounce">touch_app</span>
+                        <span class="text-sm">Buscá tu lote y hacé clic para marcarlo</span>
+                    </div>
+                    <div id="map-container" class="absolute inset-0 w-full h-full"></div>
+                </div>
+            </div>
+            <!-- Confirm Button -->
+            <div class="flex-none border-t border-surface-container p-4 md:p-6 flex justify-center">
+                <button type="button" id="map-confirm-btn"
+                    class="w-full h-14 bg-[#47C278] text-white font-bold rounded-full shadow-lg shadow-[#47C278]/20 active:scale-95 transition-all md:w-auto px-8 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100">
+                    Confirmar Ubicación
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Script to handle transitions -->
+    <!-- Success Modal -->
+    <div class="hidden fixed inset-0 z-[150] flex items-center justify-center p-6" id="success-modal">
+        <div class="absolute inset-0 bg-on-surface/50 backdrop-blur-sm"></div>
+        <div
+            class="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 text-center flex flex-col items-center gap-6">
+            <div
+                class="w-20 h-20 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-5xl"
+                    style="font-variation-settings: 'FILL' 1;">check_circle</span>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-3xl font-black text-on-surface tracking-tight">¡Solicitud enviada con éxito!</h3>
+                <p class="text-on-surface-variant leading-relaxed">
+                    Hemos recibido tu receta técnica de siembra. Un coordinador de Vistaguay revisará los datos y se
+                    comunicará con vos a la brevedad.
+                </p>
+            </div>
+            <button id="modal-confirm-btn"
+                class="w-full h-14 bg-[#47C278] text-white font-bold rounded-full shadow-lg shadow-[#47C278]/20 active:scale-95 transition-all">
+                Entendido
+            </button>
+        </div>
+    </div>
     <script>
-        const siembraForm = document.getElementById('siembra-form');
-        const successModal = document.getElementById('success-modal');
-        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
-        const solicitudView = document.getElementById('solicitud-view');
-        const proximamenteView = document.getElementById('proximamente-view');
-        const cultivoSelect = document.getElementById('cultivo-select');
-        const otroCultivoContainer = document.getElementById('otro-cultivo-container');
-
-        cultivoSelect.addEventListener('change', function (e) {
-            if (e.target.value === 'Otro') {
-                otroCultivoContainer.classList.remove('hidden');
-            } else {
-                otroCultivoContainer.classList.add('hidden');
-            }
-        });
-
-        const submitBtn = document.getElementById('submit-btn');
-        const formValidationMsg = document.getElementById('form-validation-msg');
-
-        // === Helpers de validación estilo Material UI ===
-        function setFieldError(fieldId, hasError) {
-            const wrapper = document.querySelector(`[data-field="${fieldId}"]`);
-            if (!wrapper) return;
-            if (hasError) {
-                wrapper.classList.add('field-error');
-            } else {
-                wrapper.classList.remove('field-error');
-            }
-        }
-
-        function validateForm() {
-            const isCultivoOtro = cultivoSelect.value === 'Otro';
-            const fields = [
-                { id: 'nombre-empresa', value: document.getElementById('nombre-empresa').value.trim() },
-                { id: 'fecha-aplicacion', value: document.getElementById('fecha-aplicacion').value.trim() },
-                { id: 'numero-contacto', value: document.getElementById('numero-contacto').value.trim() },
-                { id: 'lote-location-input', value: document.getElementById('lote-location-input').value.trim() },
-                { id: 'hectareas', value: document.getElementById('hectareas').value.trim() },
-                { id: 'cultivo-select', value: cultivoSelect.value },
-                { id: 'especie-siembra', value: document.getElementById('especie-siembra').value.trim() },
-                { id: 'kg-ha', value: document.getElementById('kg-ha').value.trim() },
-                { id: 'presentacion-semilla', value: document.getElementById('presentacion-semilla').value },
-            ];
-
-            let hasErrors = false;
-            fields.forEach(({ id, value }) => {
-                const invalid = !value;
-                setFieldError(id, invalid);
-                if (invalid) hasErrors = true;
-            });
-
-            // Validar "otro cultivo" solo si cultivo = Otro
-            if (isCultivoOtro) {
-                const otroCultivoVal = document.getElementById('otro-cultivo-input').value.trim();
-                const invalid = !otroCultivoVal;
-                setFieldError('otro-cultivo-input', invalid);
-                if (invalid) hasErrors = true;
-            } else {
-                setFieldError('otro-cultivo-input', false);
-            }
-
-            return !hasErrors;
-        }
-
-        // Limpiar error SOLO del campo que se corrigió (no re-marcar otros)
-        function clearFieldIfFilled(id) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            const evt = (el.tagName === 'SELECT' || el.type === 'date') ? 'change' : 'input';
-            el.addEventListener(evt, () => {
-                // Solo limpia el error de este campo si ya tiene valor
-                if (el.value.trim()) setFieldError(id, false);
-                // Oculta el mensaje global solo si todos tienen valor (sin marcar nada en rojo)
-                const allFilled = [
-                    'nombre-empresa', 'fecha-aplicacion', 'numero-contacto', 'lote-location-input',
-                    'hectareas', 'cultivo-select', 'especie-siembra', 'kg-ha', 'presentacion-semilla'
-                ].every(fid => {
-                    const f = document.getElementById(fid);
-                    return f && f.value.trim();
-                });
-                if (allFilled) formValidationMsg.classList.add('hidden');
-            });
-        }
-
-        ['nombre-empresa', 'fecha-aplicacion', 'numero-contacto', 'lote-location-input',
-            'hectareas', 'cultivo-select', 'especie-siembra', 'kg-ha', 'presentacion-semilla', 'otro-cultivo-input']
-            .forEach(clearFieldIfFilled);
-
-        siembraForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            // --- Validación ---
-            const isValid = validateForm();
-            if (!isValid) {
-                formValidationMsg.classList.remove('hidden');
-                formValidationMsg.style.display = 'flex';
-                // Shake animation en el botón
-                submitBtn.classList.remove('shake');
-                void submitBtn.offsetWidth; // reflow para reiniciar animación
-                submitBtn.classList.add('shake');
-                return;
-            }
-
-            formValidationMsg.classList.add('hidden');
-
-            // Capturamos los obstáculos seleccionados como una lista de texto
-            const obstaculosCompilados = Array.from(document.querySelectorAll('input[name="obstaculos[]"]:checked'))
-                .map(cb => cb.value)
-                .join(', ');
-
-            // Estructuramos el JSON para n8n
-            const formData = {
-                empresa: document.getElementById('nombre-empresa').value,
-                fecha_aplicacion: document.getElementById('fecha-aplicacion').value,
-                contacto: document.getElementById('numero-contacto').value,
-                localidad_texto: document.getElementById('map-search-input').value,
-                coordenadas: `${document.getElementById('lote-lat-input').value}, ${document.getElementById('lote-lng-input').value}`,
-                maps_link: `https://www.google.com/maps?q=${document.getElementById('lote-lat-input').value},${document.getElementById('lote-lng-input').value}`,
-                hectareas: document.getElementById('hectareas').value,
-                cultivo: cultivoSelect.value === 'Otro' ? document.getElementById('otro-cultivo-input').value : cultivoSelect.value,
-                obstaculos: obstaculosCompilados,
-                especie: document.getElementById('especie-siembra').value,
-                dosis: document.getElementById('kg-ha').value,
-                presentacion: document.getElementById('presentacion-semilla').value
-            };
-
-            console.log('📤 Enviando datos:', formData);
-
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="material-symbols-outlined">sync</span> Enviando...';
-
-            try {
-                const response = await fetch('https://n8n-nube-jw30.onrender.com/webhook/siembra-vistaguay-mvp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-
-                console.log('📥 Respuesta del servidor:', response.status, response.statusText);
-
-                if (response.ok) {
-                    successModal.classList.remove('hidden');
-                } else {
-                    const errorText = await response.text().catch(() => '');
-                    console.error('Error del servidor:', errorText);
-                    alert(`Error al enviar la solicitud (${response.status}). Por favor, reintentá.`);
-                }
-            } catch (error) {
-                console.error('❌ Error de conexión:', error);
-                alert('No se pudo conectar con el servidor. Verificá tu conexión a internet y reintentá.');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Enviar Solicitud <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">send</span>';
-            }
-        });
-
-        modalConfirmBtn.addEventListener('click', function () {
-            successModal.classList.add('hidden');
-            solicitudView.classList.add('hidden');
-            proximamenteView.classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        // Lógica del Mapa (Leaflet + Nominatim)
+        // === Lógica del Mapa (Leaflet + Nominatim) ===
         const ubicacionLoteTrigger = document.getElementById('ubicacion-lote-trigger');
         const mapModal = document.getElementById('map-modal');
         const mapCloseBtn = document.getElementById('map-close-btn');
@@ -777,7 +935,7 @@
 
         function initMap() {
             if (map !== null) return;
-            map = L.map(mapContainerEl).setView([-38.4161, -63.6167], 5); // Centro Argentina inicial
+            map = L.map(mapContainerEl).setView([-38.4161, -63.6167], 5);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
                 subdomains: 'abcd',
@@ -793,19 +951,16 @@
                     marker = L.marker(e.latlng).addTo(map);
                 }
                 mapConfirmBtn.disabled = false;
-                mapClickHelper.style.opacity = '0'; // Ocultar el helper al cliquear
+                mapClickHelper.style.opacity = '0';
             });
         }
 
         function openMapModal() {
             mapModal.classList.remove('hidden');
-            // Resetear al paso 1: ocultar mapa
             mapWrapperEl.classList.add('hidden');
             mapConfirmBtn.disabled = marker === null;
             document.getElementById('map-banner-text').textContent = 'Ingresá la localidad más cercana a tu lote y hacé clic en Buscar.';
-            setTimeout(() => {
-                if (map !== null) map.invalidateSize();
-            }, 100);
+            setTimeout(() => { if (map !== null) map.invalidateSize(); }, 100);
         }
 
         function closeMapModal() {
@@ -817,19 +972,16 @@
         mapCloseBtn.addEventListener('click', closeMapModal);
         mapBackdrop.addEventListener('click', closeMapModal);
 
-        // --- NUEVA LÓGICA: Autocompletado mientras escribís ---
+        // Autocompletado mientras escribís
         mapSearchInput.addEventListener('input', function () {
             const query = this.value.trim();
             clearTimeout(debounceTimer);
-
             if (query.length < 3) {
                 suggestionsContainer.innerHTML = '';
                 suggestionsContainer.classList.add('hidden');
                 return;
             }
-
             debounceTimer = setTimeout(() => {
-                // Buscamos solo en Argentina (countrycodes=ar)
                 fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ar&addressdetails=1&limit=5`)
                     .then(response => response.json())
                     .then(data => {
@@ -838,72 +990,37 @@
                             data.forEach(place => {
                                 const addr = place.address;
                                 const fullText = place.display_name;
-
-                                // 1. LOCALIDAD: Buscamos en todas las etiquetas posibles
                                 let localidad = addr.city || addr.town || addr.village || addr.hamlet || addr.municipality || addr.locality || "";
                                 if (!localidad) { localidad = fullText.split(',')[0]; }
-
-                                // 2. PROVINCIA: El escáner reforzado
-                                const provinciasArg = [
-                                    "Santa Fe", "Córdoba", "Buenos Aires", "Entre Ríos", "Corrientes", "Misiones",
-                                    "Chaco", "Formosa", "Santiago del Estero", "Tucumán", "Salta", "Jujuy",
-                                    "Catamarca", "La Rioja", "San Juan", "Mendoza", "San Luis", "La Pampa",
-                                    "Neuquén", "Río Negro", "Chubut", "Santa Cruz", "Tierra del Fuego"
-                                ];
+                                const provinciasArg = ["Santa Fe", "Córdoba", "Buenos Aires", "Entre Ríos", "Corrientes", "Misiones", "Chaco", "Formosa", "Santiago del Estero", "Tucumán", "Salta", "Jujuy", "Catamarca", "La Rioja", "San Juan", "Mendoza", "San Luis", "La Pampa", "Neuquén", "Río Negro", "Chubut", "Santa Cruz", "Tierra del Fuego"];
                                 let provincia = addr.state || addr.province || addr.state_district || addr.region || "";
                                 if (!provincia) { provincia = provinciasArg.find(p => fullText.includes(p)) || ""; }
-
-                                // 3. DEPARTAMENTO / PARTIDO
                                 let depto = addr.county || addr.district || "";
-
-                                // 4. LIMPIEZA DE TEXTO
                                 const limpiar = (t) => {
                                     if (!t) return "";
-                                    return t.replace(/Municipio de /g, "")
-                                        .replace(/Pedanía /g, "")
-                                        .replace(/Departamento /g, "")
-                                        .replace(/Partido de /g, "")
-                                        .replace(/Provincia de /g, "")
-                                        .trim();
+                                    return t.replace(/Municipio de /g, "").replace(/Pedanía /g, "").replace(/Departamento /g, "").replace(/Partido de /g, "").replace(/Provincia de /g, "").trim();
                                 };
-
                                 let locLimpia = limpiar(localidad);
                                 let deptoLimpio = limpiar(depto);
                                 let provLimpia = limpiar(provincia);
-
-                                // 5. ARMADO SIN REPETICIONES
                                 let partes = [locLimpia];
-                                if (deptoLimpio && deptoLimpio.toLowerCase() !== locLimpia.toLowerCase()) {
-                                    partes.push(deptoLimpio);
-                                }
-                                if (provLimpia && provLimpia.toLowerCase() !== locLimpia.toLowerCase() &&
-                                    provLimpia.toLowerCase() !== deptoLimpio.toLowerCase() && provLimpia !== "Argentina") {
-                                    partes.push(provLimpia);
-                                }
-
+                                if (deptoLimpio && deptoLimpio.toLowerCase() !== locLimpia.toLowerCase()) partes.push(deptoLimpio);
+                                if (provLimpia && provLimpia.toLowerCase() !== locLimpia.toLowerCase() && provLimpia.toLowerCase() !== deptoLimpio.toLowerCase() && provLimpia !== "Argentina") partes.push(provLimpia);
                                 const nombreFinal = partes.join(", ") + ", Argentina";
-
-                                // 6. CREAR ELEMENTO VISUAL
                                 const div = document.createElement('div');
                                 div.className = 'p-4 hover:bg-gray-100 cursor-pointer text-sm border-b border-gray-50 last:border-0';
                                 div.textContent = nombreFinal;
-
                                 div.onclick = () => {
                                     const { lat, lon } = place;
-
-                                    // Mostrar mapa si estaba oculto
                                     mapWrapperEl.classList.remove('hidden');
                                     mapClickHelper.style.opacity = '1';
-
                                     initMap();
                                     setTimeout(() => {
                                         map.invalidateSize();
                                         map.setView([lat, lon], 13);
                                         mapConfirmBtn.disabled = marker === null;
-                                        // Scroll suave para mostrar el mapa completo
                                         mapWrapperEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                                     }, 100);
-
                                     mapSearchInput.value = nombreFinal;
                                     suggestionsContainer.classList.add('hidden');
                                     document.getElementById('map-banner-text').textContent = 'Ubicación seleccionada: ' + nombreFinal + '. Ahora hacé clic en el mapa para ubicar el pin.';
@@ -915,10 +1032,9 @@
                             suggestionsContainer.classList.add('hidden');
                         }
                     });
-            }, 300); // 300ms de espera para no saturar el servidor
+            }, 300);
         });
 
-        // Cerrar sugerencias si se hace clic afuera del buscador
         document.addEventListener('click', (e) => {
             if (!mapSearchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
                 suggestionsContainer.classList.add('hidden');
@@ -930,32 +1046,26 @@
             if (!query) return;
             mapSearchBtn.disabled = true;
             mapSearchBtn.innerHTML = '<span class="material-symbols-outlined">sync</span> Buscando...';
-
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ar&addressdetails=1&limit=5`)
                 .then(response => response.json())
                 .then(data => {
                     if (data && data.length > 0) {
                         const { lat, lon } = data[0];
-                        // Revelar mapa en el primer resultado exitoso
                         mapWrapperEl.classList.remove('hidden');
                         mapClickHelper.style.opacity = '1';
                         mapConfirmBtn.disabled = marker === null;
                         document.getElementById('map-banner-text').textContent = 'Ahora hacé clic en el mapa para colocar el pin sobre tu lote.';
-                        // Inicializar el mapa si todavía no fue creado
                         initMap();
                         setTimeout(() => {
                             map.invalidateSize();
                             map.setView([lat, lon], 12);
-                            // Scroll suave para mostrar el mapa completo
                             mapWrapperEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                         }, 100);
                     } else {
                         alert('No se encontró la localidad. Probá con otra búsqueda.');
                     }
                 })
-                .catch(err => {
-                    alert('Error en la búsqueda.');
-                })
+                .catch(() => alert('Error en la búsqueda.'))
                 .finally(() => {
                     mapSearchBtn.disabled = false;
                     mapSearchBtn.innerHTML = '<span class="material-symbols-outlined">search</span> Buscar';
@@ -963,10 +1073,7 @@
         });
 
         mapSearchInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                mapSearchBtn.click();
-            }
+            if (e.key === 'Enter') { e.preventDefault(); mapSearchBtn.click(); }
         });
 
         mapConfirmBtn.addEventListener('click', function () {
@@ -974,11 +1081,539 @@
                 loteLatInput.value = currentLat;
                 loteLngInput.value = currentLng;
                 loteLocationInput.value = `📍 ${currentLat.toFixed(5)}, ${currentLng.toFixed(5)}`;
-                // El campo es readonly, así que limpiamos el error manualmente
-                setFieldError('lote-location-input', false);
                 closeMapModal();
             }
         });
+    </script>
+
+    <script>
+        // Listener para obstáculos "Otros" (cultivo se maneja en el bloque submit)
+        const obsOtros = document.getElementById('obs-otros');
+        if (obsOtros) {
+            obsOtros.addEventListener('change', function (e) {
+                const container = document.getElementById('otros-obstaculos-container');
+                if (e.target.checked) {
+                    container.classList.remove('hidden');
+                } else {
+                    container.classList.add('hidden');
+                }
+            });
+        }
+
+        let currentStep = 1;
+        let tipoAplicacionSeleccionada = 'Pulverización';
+
+        function selectTipoPulverizacion(btn) {
+            document.querySelectorAll('.tipo-pulv-btn').forEach(b => {
+                b.classList.remove('bg-white', 'text-on-surface', 'shadow-sm');
+                b.classList.add('text-on-surface-variant');
+            });
+            btn.classList.remove('text-on-surface-variant');
+            btn.classList.add('bg-white', 'text-on-surface', 'shadow-sm');
+            document.getElementById('tipo-pulverizacion').value = btn.dataset.value;
+
+            const prescContainer = document.getElementById('prescripcion-container');
+            if (btn.dataset.value === 'Sectorizada') {
+                prescContainer.classList.remove('hidden');
+                if (!document.getElementById('prescripcion-switch').checked) {
+                    document.getElementById('resto-pulverizacion').classList.add('hidden');
+                    document.getElementById('mensaje-necesito-generar').classList.remove('hidden');
+                    document.getElementById('btn-siguiente').classList.add('hidden');
+                }
+            } else {
+                prescContainer.classList.add('hidden');
+                document.getElementById('resto-pulverizacion').classList.remove('hidden');
+                document.getElementById('mensaje-necesito-generar').classList.add('hidden');
+                document.getElementById('btn-siguiente').classList.remove('hidden');
+            }
+        }
+
+        function togglePrescripcion(checked) {
+            if (!checked) {
+                document.getElementById('resto-pulverizacion').classList.add('hidden');
+                document.getElementById('mensaje-necesito-generar').classList.remove('hidden');
+                document.getElementById('btn-siguiente').classList.add('hidden');
+            } else {
+                document.getElementById('resto-pulverizacion').classList.remove('hidden');
+                document.getElementById('mensaje-necesito-generar').classList.add('hidden');
+                document.getElementById('btn-siguiente').classList.remove('hidden');
+            }
+        }
+
+        function selectTipoAplicacion(tipo) {
+            tipoAplicacionSeleccionada = tipo;
+            const titleEl = document.getElementById('step-4-title');
+            const pulvForm = document.getElementById('form-pulverización');
+            const siemForm = document.getElementById('form-siembra');
+
+            if (tipo === 'Pulverización') {
+                if (titleEl) titleEl.textContent = 'Receta de Pulverización';
+                if (pulvForm) pulvForm.classList.remove('hidden');
+                if (siemForm) siemForm.classList.add('hidden');
+            } else {
+                if (titleEl) titleEl.textContent = 'Receta de Siembra';
+                if (siemForm) siemForm.classList.remove('hidden');
+                if (pulvForm) pulvForm.classList.add('hidden');
+            }
+        }
+
+        function updateNavBar() {
+            const btnVolver = document.getElementById('btn-volver');
+            const btnSiguiente = document.getElementById('btn-siguiente');
+
+            // Reset visibility
+            btnVolver.classList.remove('hidden');
+            btnSiguiente.classList.remove('hidden');
+            btnSiguiente.textContent = 'Siguiente';
+
+            if (currentStep === 1) {
+                btnVolver.classList.add('hidden');
+            } else if (currentStep === 3) {
+                btnSiguiente.classList.add('hidden');
+            } else if (currentStep === 4) {
+                btnSiguiente.textContent = 'Enviar Solicitud';
+                if (tipoAplicacionSeleccionada === 'Pulverización' && document.getElementById('tipo-pulverizacion').value === 'Sectorizada' && !document.getElementById('prescripcion-switch').checked) {
+                    btnSiguiente.classList.add('hidden');
+                }
+            }
+        }
+
+        function selectMomento(btn) {
+            document.querySelectorAll('.momento-btn').forEach(b => {
+                b.classList.remove('bg-white', 'text-on-surface', 'shadow-sm');
+                b.classList.add('text-on-surface-variant');
+            });
+            btn.classList.remove('text-on-surface-variant');
+            btn.classList.add('bg-white', 'text-on-surface', 'shadow-sm');
+            document.getElementById('momento-aplicacion').value = btn.dataset.value;
+            setFieldError('momento-aplicacion', false);
+        }
+
+        function toggleCultivosVecinos(checked) {
+            const container = document.getElementById('cultivos-vecinos-select-container');
+            if (checked) {
+                container.classList.remove('hidden');
+                setFieldError('cultivos-vecinos-select', false);
+                
+                // Cargar todas las opciones de cultivos en cada select por primera vez
+                if (!window.cropsPopulated) {
+                    const baseOptions = document.getElementById('cultivos-base-options').innerHTML;
+                    ['norte', 'sur', 'este', 'oeste'].forEach(dir => {
+                        const sel = document.getElementById(`cultivos-${dir}`);
+                        if(sel) sel.innerHTML = baseOptions;
+                    });
+                    window.cropsPopulated = true;
+                }
+            } else {
+                container.classList.add('hidden');
+                setFieldError('cultivos-vecinos-select', false);
+                // Si apagan el switch, ocultamos todas las direcciones dejando la lógica limpia
+                ['norte', 'sur', 'este', 'oeste'].forEach(dir => {
+                    const btn = document.getElementById(`btn-origen-${dir}`);
+                    if (btn && btn.dataset.active === 'true') {
+                        toggleOrientacion(dir); // Esto las limpiará y esconderá
+                    }
+                });
+            }
+        }
+
+        function toggleOrientacion(origen) {
+            const btn = document.getElementById(`btn-origen-${origen}`);
+            const wrap = document.getElementById(`wrap-origen-${origen}`);
+            const select = document.getElementById(`cultivos-${origen}`);
+            
+            setFieldError('cultivos-vecinos-select', false); // Limpiar error de omision del marco general
+
+            const isActivo = btn.dataset.active === 'true';
+            
+            if (isActivo) {
+                // Desactivar
+                btn.dataset.active = 'false';
+                btn.classList.remove('border-[#47C278]', 'bg-[#47C278]/10', 'text-[#47C278]');
+                btn.classList.add('border-outline-variant/30', 'text-on-surface-variant');
+                wrap.classList.add('hidden');
+                select.value = ''; // vaciar la selección
+                setFieldError(`cultivos-${origen}`, false);
+            } else {
+                // Activar
+                btn.dataset.active = 'true';
+                btn.classList.add('border-[#47C278]', 'bg-[#47C278]/10', 'text-[#47C278]');
+                btn.classList.remove('border-outline-variant/30', 'text-on-surface-variant');
+                wrap.classList.remove('hidden');
+            }
+            
+            // Mostrar/ocultar wrapper the selects si hay al menos uno activo
+            const activos = ['norte', 'sur', 'este', 'oeste'].some(dir => {
+                const b = document.getElementById(`btn-origen-${dir}`);
+                return b && b.dataset.active === 'true';
+            });
+            
+            const wrapperGen = document.getElementById('cultivos-orientacion-wrapper');
+            if (activos) {
+                wrapperGen.classList.remove('hidden');
+            } else {
+                wrapperGen.classList.add('hidden');
+            }
+        }
+
+        function goToStep(step) {
+            currentStep = step;
+            // Limpiar estados de error o animaciones previas
+            btnSiguienteEl.classList.remove('shake');
+            // Hide all steps
+            for (let i = 1; i <= 4; i++) {
+                const stepEl = document.getElementById('step-' + i);
+                stepEl.classList.add('step-hidden');
+                stepEl.classList.remove('step-active');
+                document.getElementById('progress-' + i).classList.remove('bg-primary-container');
+                document.getElementById('progress-' + i).classList.add('bg-surface-container-high');
+            }
+
+            // Show current step
+            const currentStepEl = document.getElementById('step-' + step);
+            currentStepEl.classList.remove('step-hidden');
+            currentStepEl.classList.add('step-active');
+
+            // Update progress bar
+            for (let i = 1; i <= step; i++) {
+                document.getElementById('progress-' + i).classList.add('bg-primary-container');
+                document.getElementById('progress-' + i).classList.remove('bg-surface-container-high');
+            }
+
+            updateNavBar();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // === Validación y envío al backend ===
+        const cultivoSelect = document.getElementById('cultivo-select');
+        const otroCultivoContainer = document.getElementById('otro-cultivo-container');
+        const successModal = document.getElementById('success-modal');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const proximamenteView = document.getElementById('proximamente-view');
+        const btnSiguienteEl = document.getElementById('btn-siguiente');
+
+        cultivoSelect.addEventListener('change', function (e) {
+            if (e.target.value === 'Otro') {
+                otroCultivoContainer.classList.remove('hidden');
+            } else {
+                otroCultivoContainer.classList.add('hidden');
+            }
+        });
+
+        function setFieldError(fieldId, hasError) {
+            const wrapper = document.querySelector(`[data-field="${fieldId}"]`);
+            if (!wrapper) return;
+            if (hasError) {
+                wrapper.classList.add('field-error');
+            } else {
+                wrapper.classList.remove('field-error');
+            }
+        }
+
+        function validateCurrentStep() {
+            let hasErrors = false;
+            const fieldsPerStep = {
+                1: ['nombre-empresa', 'fecha-aplicacion', 'numero-contacto'],
+                2: ['cultivo-select', 'hectareas-input', 'lote-location-input']
+            };
+            const fields = fieldsPerStep[currentStep] || [];
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                const invalid = !el || !el.value.trim();
+                setFieldError(id, invalid);
+                if (invalid) hasErrors = true;
+            });
+            // Validar "otro cultivo" en paso 2
+            if (currentStep === 2 && cultivoSelect.value === 'Otro') {
+                const otroCultivoVal = document.getElementById('otro-cultivo-input').value.trim();
+                const invalid = !otroCultivoVal;
+                setFieldError('otro-cultivo-input', invalid);
+                if (invalid) hasErrors = true;
+            }
+            // Validaciones específicas paso 4 - Según tipo
+            if (currentStep === 4) {
+                if (tipoAplicacionSeleccionada === 'Pulverización') {
+                    const tipoPulv = document.getElementById('tipo-pulverizacion').value;
+                    if (tipoPulv === 'Sectorizada') {
+                        if (!document.getElementById('prescripcion-switch').checked) {
+                            return false; // Cannot submit in this state
+                        }
+                    }
+
+                    const cantProd = document.getElementById('cantidad-productos').value;
+                    const invalidCant = !cantProd;
+                    setFieldError('cantidad-productos', invalidCant);
+                    if (invalidCant) hasErrors = true;
+
+                    const tiposChecked = Array.from(document.querySelectorAll('input[name="tipo-tratamiento"]:checked'));
+                    const invalidTipos = tiposChecked.length === 0;
+                    setFieldError('tipo-tratamiento', invalidTipos);
+                    if (invalidTipos) hasErrors = true;
+
+                    const momentoVal = document.getElementById('momento-aplicacion').value;
+                    const invalidMomento = !momentoVal;
+                    setFieldError('momento-aplicacion', invalidMomento);
+                    if (invalidMomento) hasErrors = true;
+
+                    const vecinosSwitch = document.getElementById('cultivos-vecinos-switch');
+                    if (vecinosSwitch && vecinosSwitch.checked) {
+                        let anyActive = false;
+                        let anyError = false;
+                        ['norte', 'sur', 'este', 'oeste'].forEach(dir => {
+                            const btn = document.getElementById(`btn-origen-${dir}`);
+                            if (btn && btn.dataset.active === 'true') {
+                                anyActive = true;
+                                const sel = document.getElementById(`cultivos-${dir}`);
+                                if (!sel.value) {
+                                    setFieldError(`cultivos-${dir}`, true);
+                                    anyError = true;
+                                } else {
+                                    setFieldError(`cultivos-${dir}`, false);
+                                }
+                            }
+                        });
+                        
+                        if (!anyActive) {
+                            setFieldError('cultivos-vecinos-select', true);
+                            hasErrors = true;
+                        } else {
+                            setFieldError('cultivos-vecinos-select', false);
+                        }
+                        if (anyError) hasErrors = true;
+                    }
+                } else if (tipoAplicacionSeleccionada === 'Siembra') {
+                    ['especie-siembra', 'kg-ha', 'presentacion-semilla'].forEach(id => {
+                        const el = document.getElementById(id);
+                        const invalid = !el || !el.value.trim();
+                        setFieldError(id, invalid);
+                        if (invalid) hasErrors = true;
+                    });
+                }
+            }
+            return !hasErrors;
+        }
+
+        // Limpiar error al escribir
+        ['nombre-empresa', 'fecha-aplicacion', 'numero-contacto', 'lote-location-input',
+            'hectareas-input', 'cultivo-select', 'otro-cultivo-input', 'cultivos-norte', 'cultivos-sur', 'cultivos-este', 'cultivos-oeste',
+            'especie-siembra', 'kg-ha', 'presentacion-semilla', 'cantidad-productos']
+            .forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const evt = (el.tagName === 'SELECT' || el.type === 'date') ? 'change' : 'input';
+                el.addEventListener(evt, () => {
+                    if (el.value.trim()) setFieldError(id, false);
+                    if (id === 'nombre-empresa' || id === 'numero-contacto') {
+                        localStorage.setItem(`vistaguay_${id}`, el.value.trim());
+                    }
+                });
+            });
+
+        // Limpiar error de tipo-tratamiento al seleccionar alguno
+        document.querySelectorAll('input[name="tipo-tratamiento"]').forEach(cb => {
+            cb.addEventListener('change', () => {
+                if (document.querySelectorAll('input[name="tipo-tratamiento"]:checked').length > 0) {
+                    setFieldError('tipo-tratamiento', false);
+                }
+            });
+        });
+
+        // Cargar datos de cache
+        function loadCachedData() {
+            const fields = ['nombre-empresa', 'numero-contacto'];
+            fields.forEach(id => {
+                const val = localStorage.getItem(`vistaguay_${id}`);
+                const el = document.getElementById(id);
+                if (val && el) el.value = val;
+            });
+        }
+        loadCachedData();
+
+        async function submitForm() {
+            const isValid = validateCurrentStep();
+            if (!isValid) {
+                // Shake en el botón
+                btnSiguienteEl.classList.remove('shake');
+                void btnSiguienteEl.offsetWidth;
+                btnSiguienteEl.classList.add('shake');
+                return;
+            }
+
+            // Compilar obstáculos
+            const obstaculosSeleccionados = Array.from(document.querySelectorAll('input[name="obstaculos"]:checked'))
+                .map(cb => cb.value);
+            const otrosObstaculosInput = document.getElementById('otros-obstaculos-input');
+            const obsOtrosCheck = document.getElementById('obs-otros');
+            if (obsOtrosCheck && obsOtrosCheck.checked && otrosObstaculosInput && otrosObstaculosInput.value.trim()) {
+                // Reemplazar el texto genérico "Otros" con la especificación real
+                const idx = obstaculosSeleccionados.indexOf('Otros');
+                if (idx !== -1) obstaculosSeleccionados[idx] = otrosObstaculosInput.value.trim();
+            }
+            const obstaculosCompilados = obstaculosSeleccionados.join(', ');
+
+            let formData = {
+                servicio: tipoAplicacionSeleccionada === 'Pulverización' ? 'pulverizacion' : 'siembra',
+                tipo_aplicacion: tipoAplicacionSeleccionada,
+                empresa: document.getElementById('nombre-empresa').value,
+                fecha_aplicacion: document.getElementById('fecha-aplicacion').value,
+                contacto: document.getElementById('numero-contacto').value,
+                localidad_texto: document.getElementById('map-search-input') ? document.getElementById('map-search-input').value : '',
+                coordenadas: `${document.getElementById('lote-lat-input').value}, ${document.getElementById('lote-lng-input').value}`,
+                maps_link: `https://www.google.com/maps?q=${document.getElementById('lote-lat-input').value},${document.getElementById('lote-lng-input').value}`,
+                hectareas: document.getElementById('hectareas-input').value,
+                cultivo: cultivoSelect.value === 'Otro' ? document.getElementById('otro-cultivo-input').value : cultivoSelect.value,
+                obstaculos: obstaculosCompilados
+            };
+
+            if (tipoAplicacionSeleccionada === 'Pulverización') {
+                formData = {
+                    ...formData,
+                    tipo_pulverizacion: document.getElementById('tipo-pulverizacion').value,
+                    prescripcion: document.getElementById('tipo-pulverizacion').value === 'Sectorizada' ? (document.getElementById('prescripcion-switch').checked ? 'Sí cuenta' : 'No cuenta') : 'N/A',
+                    cantidad_productos: document.getElementById('cantidad-productos').value,
+                    tipo_tratamiento: Array.from(document.querySelectorAll('input[name="tipo-tratamiento"]:checked')).map(cb => cb.value).join(', '),
+                    momento_aplicacion: document.getElementById('momento-aplicacion').value,
+                    disponibilidad_agua: document.getElementById('disponibilidad-agua').checked ? 'Sí' : 'No',
+                    provee_corrector: document.getElementById('provee-corrector').checked ? 'Sí' : 'No',
+                    cultivos_vecinos: (() => {
+                        if (document.getElementById('cultivos-vecinos-switch').checked) {
+                            const seleccionados = [];
+                            ['norte', 'sur', 'este', 'oeste'].forEach(dir => {
+                                const btn = document.getElementById(`btn-origen-${dir}`);
+                                if (btn && btn.dataset.active === 'true') {
+                                    const val = document.getElementById(`cultivos-${dir}`).value;
+                                    if (val) seleccionados.push(`${dir.charAt(0).toUpperCase() + dir.slice(1)}: ${val}`);
+                                }
+                            });
+                            return seleccionados.length > 0 ? seleccionados.join(' | ') : 'Sí (sin especificar)';
+                        }
+                        return 'No';
+                    })()
+                };
+            } else if (tipoAplicacionSeleccionada === 'Siembra') {
+                formData = {
+                    ...formData,
+                    especie: document.getElementById('especie-siembra').value,
+                    dosis: document.getElementById('kg-ha').value,
+                    presentacion: document.getElementById('presentacion-semilla').value
+                };
+            }
+
+            console.log('📤 Enviando datos:', formData);
+
+            btnSiguienteEl.disabled = true;
+            btnSiguienteEl.innerHTML = '<span class="material-symbols-outlined text-base animate-spin" style="animation: spin 1s linear infinite;">sync</span> Enviando...';
+
+            try {
+                const response = await fetch('https://n8n-nube-jw30.onrender.com/webhook/siembra-vistaguay-mvp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                console.log('📥 Respuesta del servidor:', response.status, response.statusText);
+                if (response.ok) {
+                    successModal.classList.remove('hidden');
+                } else {
+                    const errorText = await response.text().catch(() => '');
+                    console.error('Error del servidor:', errorText);
+                    alert(`Error al enviar la solicitud (${response.status}). Por favor, reintentá.`);
+                }
+            } catch (error) {
+                console.error('❌ Error de conexión:', error);
+                alert('No se pudo conectar con el servidor. Verificá tu conexión a internet y reintentá.');
+            } finally {
+                btnSiguienteEl.disabled = false;
+                btnSiguienteEl.textContent = 'Enviar Solicitud';
+            }
+        }
+
+        modalConfirmBtn.addEventListener('click', function () {
+            successModal.classList.add('hidden');
+            proximamenteView.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        function nextStep() {
+            if (currentStep < 4) {
+                // Solo validar si el paso actual tiene campos configurados
+                const fieldsPerStep = {
+                    1: true,
+                    2: true,
+                    4: true
+                };
+
+                if (fieldsPerStep[currentStep]) {
+                    const isValid = validateCurrentStep();
+                    if (!isValid) {
+                        btnSiguienteEl.classList.remove('shake');
+                        void btnSiguienteEl.offsetWidth;
+                        btnSiguienteEl.classList.add('shake');
+                        return;
+                    }
+                }
+                goToStep(currentStep + 1);
+            } else if (currentStep === 4) {
+                submitForm();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1);
+            }
+        }
+
+        // Initialize view
+        updateNavBar();
+    </script>
+    <!-- Help BottomSheet -->
+    <div class="fixed inset-0 z-[110] hidden transition-opacity duration-300" id="help-bottom-sheet">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="toggleHelpSheet(false)"></div>
+        <!-- Sheet Content -->
+        <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-[2.5rem] p-8 pb-12 transition-transform duration-300 translate-y-full transform-gpu"
+            id="help-sheet-container">
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8"></div>
+            <div class="space-y-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-primary-container/20 rounded-2xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-2xl">info</span>
+                    </div>
+                    <h3 class="text-xl font-black text-on-surface tracking-tight">Información de Ayuda</h3>
+                </div>
+                <p class="text-on-surface-variant leading-relaxed">
+                    Completá este formulario para iniciar tu pedido de Aplicación con Dron. Nosotros nos encargamos de
+                    seleccionar al piloto de la Red Experts más capacitado para asegurar el éxito de tu operación y te
+                    contactaremos para gestionar tu vuelo.
+                </p>
+                <button
+                    class="w-full h-14 bg-[#47C278] text-white font-bold rounded-full shadow-lg shadow-[#47C278]/20 active:scale-95 transition-all mt-4"
+                    onclick="toggleHelpSheet(false)">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleHelpSheet(show) {
+            const sheet = document.getElementById('help-bottom-sheet');
+            const container = document.getElementById('help-sheet-container');
+
+            if (show) {
+                sheet.classList.remove('hidden');
+                // Allow DOM to update before triggering animation
+                setTimeout(() => {
+                    container.classList.remove('translate-y-full');
+                    container.classList.add('translate-y-0');
+                }, 10);
+            } else {
+                container.classList.remove('translate-y-0');
+                container.classList.add('translate-y-full');
+                setTimeout(() => {
+                    sheet.classList.add('hidden');
+                }, 300);
+            }
+        }
     </script>
 </body>
 
